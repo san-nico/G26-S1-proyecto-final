@@ -8,6 +8,8 @@ Proyecto universitario desarrollado con Next.js y Tailwind CSS para consultar in
 - Listado y busqueda de instituciones bancarias.
 - Consulta del ultimo balance mensual disponible.
 - Consulta del ultimo estado de resultados disponible.
+- Resumen visual de ingresos gastos y resultado usando subtotales oficiales.
+- Secciones desplegables para entender las cuentas sin perder el detalle tecnico.
 - Tablas con las cuentas informadas por la CMF.
 - Logos locales para identificar cada banco.
 - Mensajes claros para errores de conexion o de la API Key.
