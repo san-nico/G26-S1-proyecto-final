@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# G26 S1 Proyecto Final
 
-## Getting Started
+Proyecto universitario desarrollado con Next.js y Tailwind CSS para consultar informacion bancaria publicada por la Comision para el Mercado Financiero de Chile.
 
-First, run the development server:
+## Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Pagina de inicio con acceso a las consultas principales.
+- Listado y busqueda de instituciones bancarias.
+- Consulta del ultimo balance mensual disponible.
+- Consulta del ultimo estado de resultados disponible.
+- Tablas con las cuentas informadas por la CMF.
+- Logos locales para identificar cada banco.
+- Mensajes claros para errores de conexion o de la API Key.
+
+## Arquitectura del proyecto
+
+Se conserva la arquitectura base entregada en el repositorio. El contenido propio de cada ruta permanece dentro de su archivo `page.tsx`.
+
+```text
+app/
+├── balances/
+│   └── page.tsx             # Consulta de balances
+├── landing/
+│   └── page.tsx             # Pagina de inicio
+├── resultados/
+│   ├── loading.tsx          # Estado de carga
+│   └── page.tsx             # Consulta de resultados
+├── globals.css              # Tailwind y tema general
+├── layout.tsx               # Layout principal y metadata
+└── page.tsx                 # Redireccion hacia landing
+
+components/
+└── global/
+    ├── Footer.tsx           # Pie compartido
+    └── Navbar.tsx           # Navegacion compartida
+
+public/
+└── bank-logos/              # Logos bancarios por codigo CMF
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`Navbar` y `Footer` son los unicos componentes visuales compartidos. Los formularios las tarjetas las tablas y la logica de cada consulta se mantienen en sus paginas correspondientes.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Key de la CMF
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Para este trabajo academico Francisco Labra autorizo compartir la API Key con sus companeros. La clave se encuentra en `.env.example`.
 
-## Learn More
+Para usarla se debe crear `.env.local` a partir del ejemplo:
 
-To learn more about Next.js, take a look at the following resources:
+```powershell
+Copy-Item .env.example .env.local
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+La variable utilizada por el proyecto es:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+CMF_API_KEY=clave_entregada_por_la_cmf
+```
 
-## Deploy on Vercel
+Aunque la clave se comparte para fines academicos las consultas se realizan desde componentes de servidor. La clave no se envia mediante codigo JavaScript al navegador.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+La CMF establece una cuota mensual de consultas. Todos los integrantes deben evitar recargar las paginas de manera innecesaria.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Ejecutar el proyecto
+
+```bash
+npm install
+npm run dev
+```
+
+Luego se puede abrir:
+
+- `http://localhost:3000/landing`
+- `http://localhost:3000/balances`
+- `http://localhost:3000/resultados`
+
+## Verificaciones
+
+```bash
+npm run lint
+npm run build
+```
