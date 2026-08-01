@@ -7,7 +7,7 @@ import Navbar from "@/components/global/Navbar";
 
 export const metadata: Metadata = {
   title: "Balances bancarios | CMF Bancos",
-  description: "Consulta los balances mensuales publicados por la CMF Chile.",
+  description: "Entiende los activos pasivos y patrimonio publicados por la CMF Chile.",
 };
 
 type SearchParams = Promise<{
@@ -33,6 +33,22 @@ type BalanceAccount = {
   MonedaReajustablePorTipoDeCambio?: string | number;
   MonedaExtranjera?: string | number;
   MonedaTotal?: string | number;
+};
+
+type BalanceTone = "assets" | "liabilities" | "equity";
+
+type BalanceDetail = {
+  code: string;
+  label: string;
+};
+
+type BalanceGroup = {
+  category: string;
+  title: string;
+  description: string;
+  totalCode: string;
+  details: BalanceDetail[];
+  tone: BalanceTone;
 };
 
 type Period = {
@@ -84,6 +100,109 @@ const MONTHS = [
   "noviembre",
   "diciembre",
 ];
+
+// La CMF ya entrega los totales y subtotales oficiales. Esta vista usa esos
+// valores directamente para no duplicar montos al mezclar cuentas y detalles.
+const BALANCE_GROUPS: BalanceGroup[] = [
+  {
+    category: "Recursos",
+    title: "Activos",
+    description: "Lo que el banco posee y lo que otras personas o empresas le deben.",
+    totalCode: "100000000",
+    tone: "assets",
+    details: [
+      { code: "105000000", label: "Efectivo y depósitos en bancos" },
+      { code: "107000000", label: "Operaciones en liquidación" },
+      { code: "110000000", label: "Activos financieros para negociar" },
+      { code: "115000000", label: "Activos no destinados a negociación a valor razonable" },
+      { code: "118000000", label: "Activos designados a valor razonable" },
+      { code: "120000000", label: "Inversiones con cambios en otro resultado integral" },
+      { code: "130000000", label: "Contratos de cobertura financiera" },
+      { code: "140000000", label: "Créditos y otras inversiones a costo amortizado" },
+      { code: "150000000", label: "Inversiones en sociedades" },
+      { code: "160000000", label: "Activos intangibles" },
+      { code: "170000000", label: "Propiedades y equipos" },
+      { code: "175000000", label: "Derechos de uso por arrendamiento" },
+      { code: "180000000", label: "Impuestos corrientes" },
+      { code: "185000000", label: "Impuestos diferidos" },
+      { code: "190000000", label: "Otros activos" },
+      { code: "195000000", label: "Activos no corrientes para la venta" },
+    ],
+  },
+  {
+    category: "Obligaciones",
+    title: "Pasivos",
+    description: "Lo que el banco debe a clientes y a otras instituciones.",
+    totalCode: "200000000",
+    tone: "liabilities",
+    details: [
+      { code: "207000000", label: "Operaciones en liquidación" },
+      { code: "210000000", label: "Pasivos financieros para negociar" },
+      { code: "218000000", label: "Pasivos designados a valor razonable" },
+      { code: "230000000", label: "Contratos de cobertura financiera" },
+      { code: "240000000", label: "Depósitos de clientes y otras obligaciones" },
+      { code: "250000000", label: "Obligaciones por arrendamientos" },
+      { code: "255000000", label: "Instrumentos de capital regulatorio emitidos" },
+      { code: "260000000", label: "Provisiones por contingencias" },
+      { code: "265000000", label: "Provisiones para dividendos e instrumentos de capital" },
+      { code: "270000000", label: "Provisiones especiales por riesgo de crédito" },
+      { code: "280000000", label: "Impuestos corrientes" },
+      { code: "285000000", label: "Impuestos diferidos" },
+      { code: "290000000", label: "Otros pasivos" },
+      { code: "295000000", label: "Pasivos asociados a grupos para la venta" },
+    ],
+  },
+  {
+    category: "Recursos propios",
+    title: "Patrimonio",
+    description: "El capital las reservas y los resultados que pertenecen a sus propietarios.",
+    totalCode: "300000000",
+    tone: "equity",
+    details: [
+      { code: "310000000", label: "Capital aportado" },
+      { code: "320000000", label: "Reservas" },
+      { code: "330000000", label: "Otro resultado integral acumulado" },
+      { code: "340000000", label: "Utilidades o pérdidas de años anteriores" },
+      { code: "350000000", label: "Utilidad o pérdida del ejercicio" },
+      { code: "360000000", label: "Provisiones para dividendos e instrumentos de capital" },
+      { code: "365000000", label: "Provisiones para remesas a casa matriz" },
+      { code: "390000000", label: "Interés no controlador" },
+    ],
+  },
+];
+
+const BALANCE_TONE_STYLES: Record<
+  BalanceTone,
+  {
+    card: string;
+    badge: string;
+    value: string;
+    dot: string;
+    disclosure: string;
+  }
+> = {
+  assets: {
+    card: "border-result-200 bg-result-50",
+    badge: "bg-result-100 text-result-900",
+    value: "text-result-700",
+    dot: "bg-result-700",
+    disclosure: "border-result-200",
+  },
+  liabilities: {
+    card: "border-expense-200 bg-expense-50",
+    badge: "bg-expense-100 text-expense-900",
+    value: "text-expense-700",
+    dot: "bg-expense-700",
+    disclosure: "border-expense-200",
+  },
+  equity: {
+    card: "border-income-200 bg-income-50",
+    badge: "bg-income-100 text-income-900",
+    value: "text-income-700",
+    dot: "bg-income-700",
+    disclosure: "border-income-200",
+  },
+};
 
 class CmfError extends Error {
   constructor(message: string, readonly status: number) {
@@ -239,6 +358,124 @@ function formatValue(value: string | number | undefined) {
     : value;
 }
 
+function indexAccounts(accounts: BalanceAccount[]) {
+  const accountsByCode = new Map<string, BalanceAccount>();
+
+  for (const account of accounts) {
+    const code = account.CodigoCuenta?.trim();
+    if (code) accountsByCode.set(code, account);
+  }
+
+  return accountsByCode;
+}
+
+function ChevronIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      fill="none"
+      className="mt-1 size-5 shrink-0 text-muted transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none sm:mt-0"
+    >
+      <path
+        d="m5 7.5 5 5 5-5"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function BalanceSummaryCard({
+  group,
+  account,
+}: {
+  group: BalanceGroup;
+  account?: BalanceAccount;
+}) {
+  const styles = BALANCE_TONE_STYLES[group.tone];
+
+  return (
+    <article className={`rounded-2xl border p-5 shadow-sm ${styles.card}`}>
+      <div className="flex items-center gap-2">
+        <span aria-hidden="true" className={`size-2.5 rounded-full ${styles.dot}`} />
+        <p className={`text-sm font-bold ${styles.value}`}>{group.category}</p>
+      </div>
+      <h4 className="mt-3 text-lg font-bold text-ink">{group.title}</h4>
+      <p className="mt-2 min-h-12 text-sm leading-6 text-muted">{group.description}</p>
+      <p className={`mt-5 whitespace-nowrap font-mono text-xl font-bold tracking-tight tabular-nums sm:text-2xl md:text-lg xl:text-xl ${styles.value}`}>
+        {formatValue(account?.MonedaTotal)}
+      </p>
+      <p className="mt-2 text-xs font-medium text-muted">CLP · subtotal oficial CMF</p>
+    </article>
+  );
+}
+
+function BalanceBreakdown({
+  group,
+  accountsByCode,
+}: {
+  group: BalanceGroup;
+  accountsByCode: Map<string, BalanceAccount>;
+}) {
+  const styles = BALANCE_TONE_STYLES[group.tone];
+  const total = accountsByCode.get(group.totalCode);
+  const rows = group.details.flatMap((detail) => {
+    const account = accountsByCode.get(detail.code);
+    return account ? [{ ...detail, account }] : [];
+  });
+
+  if (!total && rows.length === 0) return null;
+
+  return (
+    <details className={`group overflow-hidden rounded-2xl border bg-panel shadow-sm ${styles.disclosure}`}>
+      <summary className="flex min-h-14 cursor-pointer list-none items-start gap-3 px-4 py-4 outline-none transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 [&::-webkit-details-marker]:hidden sm:items-center sm:px-5">
+        <span aria-hidden="true" className={`mt-1.5 size-2.5 shrink-0 rounded-full sm:mt-0 ${styles.dot}`} />
+        <span className="min-w-0 flex-1">
+          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${styles.badge}`}>
+            {group.category}
+          </span>
+          <span className="mt-2 block font-bold text-ink">{group.title}</span>
+          <span className="mt-1 block text-sm font-normal leading-6 text-muted">
+            {group.description}
+          </span>
+          <span className={`mt-3 block font-mono text-lg font-bold tabular-nums sm:hidden ${styles.value}`}>
+            {formatValue(total?.MonedaTotal)} CLP
+          </span>
+        </span>
+        <span className="hidden shrink-0 text-right sm:block">
+          <span className={`block font-mono text-lg font-bold tabular-nums ${styles.value}`}>
+            {formatValue(total?.MonedaTotal)}
+          </span>
+          <span className="mt-1 block text-xs font-medium text-muted">CLP</span>
+        </span>
+        <ChevronIcon />
+      </summary>
+
+      <dl className="divide-y divide-slate-100 border-t border-line bg-white">
+        {rows.map(({ code, label, account }) => (
+          <div
+            key={code}
+            className="grid gap-1 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-6 sm:px-5"
+          >
+            <dt className="text-sm font-medium text-slate-800">
+              {label}
+              <span className="ml-2 whitespace-nowrap font-mono text-xs font-normal text-muted">
+                {code}
+              </span>
+            </dt>
+            <dd className="font-mono text-sm font-semibold tabular-nums text-ink sm:text-right">
+              {formatValue(account.MonedaTotal)} CLP
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  );
+}
+
 function periodName(period: Period) {
   return `${MONTHS[period.month - 1]} de ${period.year}`;
 }
@@ -334,6 +571,7 @@ export default async function BalancesPage({
         ),
       )
     : banks;
+  const accountsByCode = indexAccounts(accounts);
 
   return (
     <div className="flex min-h-dvh flex-col bg-page">
@@ -348,7 +586,7 @@ export default async function BalancesPage({
             Balances bancarios
           </h1>
           <p className="mt-4 text-lg leading-8 text-muted">
-            Busca una institución y revisa las cuentas de su último balance mensual disponible.
+            Busca una institución y entiende sus activos pasivos y patrimonio sin perder el detalle técnico.
           </p>
         </section>
 
@@ -418,43 +656,145 @@ export default async function BalancesPage({
             )}
 
             {selectedBank && period && (
-              <section id="detalle" className="mt-12 scroll-mt-6 overflow-hidden rounded-xl border border-line bg-panel">
-                <div className="border-b border-line p-5 sm:p-6">
-                  <p className="text-sm font-semibold text-brand-700">Balance mensual</p>
-                  <h2 className="mt-1 text-2xl font-bold text-ink">{selectedBank.NombreInstitucion}</h2>
-                  <p className="mt-2 text-sm text-muted">
-                    Código {selectedBank.CodigoInstitucion} · {periodName(period)}
+              <section id="detalle" className="mt-12 scroll-mt-6 space-y-8">
+                <header className="rounded-2xl border border-line bg-panel p-5 shadow-sm sm:p-6">
+                  <div className="flex items-start gap-4">
+                    <BankLogo bank={selectedBank} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-brand-700">Estado de situación financiera</p>
+                      <h2 className="mt-1 text-2xl font-bold text-ink">
+                        {selectedBank.NombreInstitucion}
+                      </h2>
+                      <p className="mt-2 text-sm text-muted">
+                        Código {selectedBank.CodigoInstitucion} · Período informado: {periodName(period)}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-5 max-w-3xl text-sm leading-6 text-muted">
+                    Esta es una lectura simplificada de la estructura de NIC 1. Primero se muestra lo que el banco posee lo que debe y los recursos que pertenecen a sus propietarios.
                   </p>
-                </div>
+                </header>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[960px] text-left text-sm">
-                    <thead className="bg-slate-50 text-slate-600">
-                      <tr>
-                        <th className="px-4 py-3">Código</th>
-                        <th className="px-4 py-3">Cuenta</th>
-                        <th className="px-4 py-3 text-right">CLP no reaj.</th>
-                        <th className="px-4 py-3 text-right">Reaj. IPC</th>
-                        <th className="px-4 py-3 text-right">Tipo cambio</th>
-                        <th className="px-4 py-3 text-right">Moneda extranjera</th>
-                        <th className="px-4 py-3 text-right">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {accounts.map((account, index) => (
-                        <tr key={`${account.CodigoCuenta}-${index}`}>
-                          <td className="whitespace-nowrap px-4 py-3 font-mono text-brand-700">{account.CodigoCuenta ?? "—"}</td>
-                          <th scope="row" className="px-4 py-3 font-medium text-slate-800">{account.DescripcionCuenta ?? "Sin descripción"}</th>
-                          <td className="whitespace-nowrap px-4 py-3 text-right">{formatValue(account.MonedaChilenaNoReajustable)}</td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right">{formatValue(account.MonedaReajustablePorIPC)}</td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right">{formatValue(account.MonedaReajustablePorTipoDeCambio)}</td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right">{formatValue(account.MonedaExtranjera)}</td>
-                          <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-ink">{formatValue(account.MonedaTotal)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <section aria-labelledby="balance-summary-title">
+                  <div className="max-w-3xl">
+                    <p className="text-sm font-bold uppercase tracking-widest text-brand-700">
+                      Vista rápida
+                    </p>
+                    <h3 id="balance-summary-title" className="mt-2 text-2xl font-bold text-ink">
+                      Resumen fácil de entender
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted">
+                      Las cifras corresponden a subtotales oficiales de la CMF. No se realizan cálculos adicionales.
+                    </p>
+                  </div>
+
+                  <div className="mt-5 grid gap-4 md:grid-cols-3">
+                    {BALANCE_GROUPS.map((group) => (
+                      <BalanceSummaryCard
+                        key={group.totalCode}
+                        group={group}
+                        account={accountsByCode.get(group.totalCode)}
+                      />
+                    ))}
+                  </div>
+                </section>
+
+                <section aria-labelledby="accounting-equation-title" className="rounded-2xl border border-line bg-panel p-5 shadow-sm sm:p-6">
+                  <p className="text-sm font-bold uppercase tracking-widest text-brand-700">
+                    Ecuación contable
+                  </p>
+                  <h3 id="accounting-equation-title" className="mt-2 text-2xl font-bold text-ink">
+                    ¿Cómo se relacionan estas cifras?
+                  </h3>
+                  <p aria-label="Activos igual a pasivos más patrimonio" className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-xl font-bold sm:text-2xl">
+                    <span className="text-result-700">Activos</span>
+                    <span aria-hidden="true" className="text-muted">=</span>
+                    <span className="text-expense-700">Pasivos</span>
+                    <span aria-hidden="true" className="text-muted">+</span>
+                    <span className="text-income-700">Patrimonio</span>
+                  </p>
+                  <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-6 text-muted">
+                    Todo recurso del banco se financia mediante obligaciones o recursos propios. La igualdad usa los subtotales publicados por la CMF.
+                  </p>
+                  {accountsByCode.get("510000000") && (
+                    <p className="mt-4 text-center text-xs font-medium text-muted">
+                      Total oficial de pasivos y patrimonio: {formatValue(accountsByCode.get("510000000")?.MonedaTotal)} CLP
+                    </p>
+                  )}
+                </section>
+
+                <section aria-labelledby="balance-breakdown-title">
+                  <h3 id="balance-breakdown-title" className="text-2xl font-bold text-ink">
+                    ¿Qué contiene cada parte?
+                  </h3>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
+                    Abre una categoría para revisar sus principales componentes sin recorrer cientos de códigos.
+                  </p>
+
+                  {/* details permite desplegar información sin agregar estado ni JavaScript al cliente. */}
+                  <div className="mt-5 space-y-3">
+                    {BALANCE_GROUPS.map((group) => (
+                      <BalanceBreakdown
+                        key={group.totalCode}
+                        group={group}
+                        accountsByCode={accountsByCode}
+                      />
+                    ))}
+                  </div>
+                </section>
+
+                <details className="group overflow-hidden rounded-2xl border border-line bg-panel shadow-sm">
+                  <summary className="flex min-h-14 cursor-pointer list-none items-center gap-4 px-5 py-4 outline-none transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 [&::-webkit-details-marker]:hidden">
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-bold text-ink">Detalle técnico completo</span>
+                      <span className="mt-1 block text-sm text-muted">
+                        {accounts.length.toLocaleString("es-CL")} cuentas y códigos informados por la CMF
+                      </span>
+                    </span>
+                    <ChevronIcon />
+                  </summary>
+
+                  <div className="border-t border-line">
+                    <p className="bg-slate-50 px-5 py-4 text-sm leading-6 text-muted">
+                      Esta tabla conserva todas las monedas cuentas y subtotales tal como fueron recibidos desde la CMF.
+                    </p>
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[960px] text-left text-sm">
+                        <caption className="sr-only">
+                          Detalle técnico del balance de {selectedBank.NombreInstitucion}
+                        </caption>
+                        <thead className="bg-slate-50 text-slate-600">
+                          <tr>
+                            <th className="px-4 py-3">Código</th>
+                            <th className="px-4 py-3">Cuenta</th>
+                            <th className="px-4 py-3 text-right">CLP no reaj.</th>
+                            <th className="px-4 py-3 text-right">Reaj. IPC</th>
+                            <th className="px-4 py-3 text-right">Tipo cambio</th>
+                            <th className="px-4 py-3 text-right">Moneda extranjera</th>
+                            <th className="px-4 py-3 text-right">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {accounts.map((account, index) => (
+                            <tr key={`${account.CodigoCuenta}-${index}`}>
+                              <td className="whitespace-nowrap px-4 py-3 font-mono text-brand-700">
+                                {account.CodigoCuenta ?? "—"}
+                              </td>
+                              <th scope="row" className="px-4 py-3 font-medium text-slate-800">
+                                {account.DescripcionCuenta ?? "Sin descripción"}
+                              </th>
+                              <td className="whitespace-nowrap px-4 py-3 text-right">{formatValue(account.MonedaChilenaNoReajustable)}</td>
+                              <td className="whitespace-nowrap px-4 py-3 text-right">{formatValue(account.MonedaReajustablePorIPC)}</td>
+                              <td className="whitespace-nowrap px-4 py-3 text-right">{formatValue(account.MonedaReajustablePorTipoDeCambio)}</td>
+                              <td className="whitespace-nowrap px-4 py-3 text-right">{formatValue(account.MonedaExtranjera)}</td>
+                              <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-ink">{formatValue(account.MonedaTotal)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </details>
               </section>
             )}
           </>

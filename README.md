@@ -7,6 +7,8 @@ Proyecto universitario desarrollado con Next.js y Tailwind CSS para consultar in
 - Pagina de inicio con acceso a las consultas principales.
 - Listado y busqueda de instituciones bancarias.
 - Consulta del ultimo balance mensual disponible.
+- Resumen visual de activos pasivos y patrimonio usando subtotales oficiales.
+- Explicacion simple de la ecuacion contable basada en la estructura de NIC 1.
 - Consulta del ultimo estado de resultados disponible.
 - Resumen visual de ingresos gastos y resultado usando subtotales oficiales.
 - Secciones desplegables para entender las cuentas sin perder el detalle tecnico.
