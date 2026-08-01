@@ -14,7 +14,6 @@ export default function LandingPage() {
       <Navbar />
 
       <main className="flex-1">
-        {/* Presentación principal y accesos a las dos consultas del proyecto. */}
         <section className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-2 lg:items-center">
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-brand-700">
@@ -68,7 +67,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Resumen breve para explicar el flujo a quien visita la aplicación. */}
         <section className="border-y border-line bg-panel">
           <div className="mx-auto max-w-6xl px-4 py-10 text-center sm:px-6">
             <h2 className="text-2xl font-bold text-ink">Una herramienta simple para revisar datos públicos</h2>

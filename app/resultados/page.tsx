@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { connection } from "next/server";
 import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 
@@ -207,17 +206,6 @@ class CmfError extends Error {
   constructor(message: string, readonly status: number) {
     super(message);
   }
-}
-
-function getApiKey() {
-  // La clave se lee únicamente en el servidor y nunca se entrega al navegador.
-  return (
-    process.env.CMF_API_KEY ??
-    process.env.API_CMF_KEY ??
-    process.env.SBIF_API_KEY ??
-    process.env.API_KEY ??
-    process.env.APIKEY
-  );
 }
 
 function asArray<T>(value: T[] | T | undefined): T[] {
@@ -479,7 +467,6 @@ function periodName(period: Period) {
 }
 
 function publicError(error: unknown) {
-  // Los códigos técnicos se convierten en mensajes comprensibles para la vista.
   if (error instanceof CmfError && error.status === 420) {
     return "La API key alcanzó el límite mensual de consultas de la CMF.";
   }
@@ -530,13 +517,10 @@ export default async function ResultsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  // connection vuelve dinámica la ruta y searchParams es asíncrono en Next 16.
-  await connection();
-
   const params = await searchParams;
   const selectedCode = firstValue(params.codigo)?.trim() ?? "";
   const query = firstValue(params.q)?.trim() ?? "";
-  const apiKey = getApiKey();
+  const apiKey = process.env.CMF_API_KEY;
 
   let banks: Bank[] = [];
   let accounts: Account[] = [];
@@ -712,7 +696,6 @@ export default async function ResultsPage({
                     Selecciona una categoría para revisar sus principales componentes sin recorrer cientos de códigos.
                   </p>
 
-                  {/* details permite desplegar información sin agregar estado ni JavaScript al cliente. */}
                   <div className="mt-5 space-y-3">
                     {RESULT_GROUPS.map((group) => (
                       <ResultBreakdown

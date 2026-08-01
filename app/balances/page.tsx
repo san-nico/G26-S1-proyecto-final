@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { connection } from "next/server";
 import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 
@@ -182,25 +181,25 @@ const BALANCE_TONE_STYLES: Record<
   }
 > = {
   assets: {
-    card: "border-result-200 bg-result-50",
-    badge: "bg-result-100 text-result-900",
-    value: "text-result-700",
-    dot: "bg-result-700",
-    disclosure: "border-result-200",
+    card: "border-blue-200 bg-blue-50",
+    badge: "bg-blue-100 text-blue-900",
+    value: "text-blue-700",
+    dot: "bg-blue-700",
+    disclosure: "border-blue-200",
   },
   liabilities: {
-    card: "border-expense-200 bg-expense-50",
-    badge: "bg-expense-100 text-expense-900",
-    value: "text-expense-700",
-    dot: "bg-expense-700",
-    disclosure: "border-expense-200",
+    card: "border-rose-200 bg-rose-50",
+    badge: "bg-rose-100 text-rose-900",
+    value: "text-rose-700",
+    dot: "bg-rose-700",
+    disclosure: "border-rose-200",
   },
   equity: {
-    card: "border-income-200 bg-income-50",
-    badge: "bg-income-100 text-income-900",
-    value: "text-income-700",
-    dot: "bg-income-700",
-    disclosure: "border-income-200",
+    card: "border-emerald-200 bg-emerald-50",
+    badge: "bg-emerald-100 text-emerald-900",
+    value: "text-emerald-700",
+    dot: "bg-emerald-700",
+    disclosure: "border-emerald-200",
   },
 };
 
@@ -208,17 +207,6 @@ class CmfError extends Error {
   constructor(message: string, readonly status: number) {
     super(message);
   }
-}
-
-function getApiKey() {
-  // La clave se lee únicamente en el servidor y nunca se entrega al navegador.
-  return (
-    process.env.CMF_API_KEY ??
-    process.env.API_CMF_KEY ??
-    process.env.SBIF_API_KEY ??
-    process.env.API_KEY ??
-    process.env.APIKEY
-  );
 }
 
 function asArray<T>(value: T[] | T | undefined): T[] {
@@ -481,7 +469,6 @@ function periodName(period: Period) {
 }
 
 function publicError(error: unknown) {
-  // Los códigos técnicos se convierten en mensajes comprensibles para la vista.
   if (error instanceof CmfError && error.status === 420) {
     return "La API key alcanzó el límite mensual de consultas de la CMF.";
   }
@@ -532,13 +519,10 @@ export default async function BalancesPage({
 }: {
   searchParams: SearchParams;
 }) {
-  // connection vuelve dinámica la ruta y searchParams es asíncrono en Next 16.
-  await connection();
-
   const params = await searchParams;
   const selectedCode = firstValue(params.codigo)?.trim() ?? "";
   const query = firstValue(params.q)?.trim() ?? "";
-  const apiKey = getApiKey();
+  const apiKey = process.env.CMF_API_KEY;
 
   let banks: Bank[] = [];
   let accounts: BalanceAccount[] = [];
@@ -707,11 +691,11 @@ export default async function BalancesPage({
                     ¿Cómo se relacionan estas cifras?
                   </h3>
                   <p aria-label="Activos igual a pasivos más patrimonio" className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center text-xl font-bold sm:text-2xl">
-                    <span className="text-result-700">Activos</span>
+                    <span className="text-blue-700">Activos</span>
                     <span aria-hidden="true" className="text-muted">=</span>
-                    <span className="text-expense-700">Pasivos</span>
+                    <span className="text-rose-700">Pasivos</span>
                     <span aria-hidden="true" className="text-muted">+</span>
-                    <span className="text-income-700">Patrimonio</span>
+                    <span className="text-emerald-700">Patrimonio</span>
                   </p>
                   <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-6 text-muted">
                     Todo recurso del banco se financia mediante obligaciones o recursos propios. La igualdad usa los subtotales publicados por la CMF.
@@ -731,7 +715,6 @@ export default async function BalancesPage({
                     Abre una categoría para revisar sus principales componentes sin recorrer cientos de códigos.
                   </p>
 
-                  {/* details permite desplegar información sin agregar estado ni JavaScript al cliente. */}
                   <div className="mt-5 space-y-3">
                     {BALANCE_GROUPS.map((group) => (
                       <BalanceBreakdown
