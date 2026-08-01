@@ -642,20 +642,12 @@ export default async function ResultsPage({
                       <h3 className="mt-4 flex-1 font-bold text-ink">
                         {bank.NombreInstitucion}
                       </h3>
-                      <div className="mt-5 grid grid-cols-2 gap-2">
-                        <Link
-                          href={`/balances?codigo=${bank.CodigoInstitucion}`}
-                          className="rounded-lg border border-line px-3 py-2 text-center text-sm font-semibold hover:bg-brand-50"
-                        >
-                          Ver balance
-                        </Link>
-                        <Link
-                          href={`/resultados?codigo=${bank.CodigoInstitucion}#detalle`}
-                          className="rounded-lg bg-brand-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-brand-800"
-                        >
-                          Ver resultados
-                        </Link>
-                      </div>
+                      <Link
+                        href={`/resultados?codigo=${bank.CodigoInstitucion}#detalle`}
+                        className="mt-5 rounded-lg bg-brand-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-brand-800"
+                      >
+                        Ver resultados
+                      </Link>
                     </article>
                   ))}
                 </div>
