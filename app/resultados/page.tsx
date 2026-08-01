@@ -666,11 +666,8 @@ export default async function ResultsPage({
 
                 <section aria-labelledby="summary-title">
                   <div className="max-w-3xl">
-                    <p className="text-sm font-bold uppercase tracking-widest text-brand-700">
-                      Vista rápida
-                    </p>
-                    <h3 id="summary-title" className="mt-2 text-2xl font-bold text-ink">
-                      Resumen fácil de entender
+                    <h3 id="summary-title" className="text-2xl font-bold text-ink">
+                      Resumen
                     </h3>
                     <p className="mt-2 text-sm leading-6 text-muted">
                       Son valores publicados por la CMF. No se realizan cálculos adicionales.
