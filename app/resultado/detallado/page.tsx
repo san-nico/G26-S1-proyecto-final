@@ -1,18 +1,19 @@
 import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 
 export const metadata: Metadata = {
-  title: "Resultados bancarios | CMF Chile",
-  description: "Consulta los estados de resultados publicados por la CMF.",
+  title: "Estado de Resultados | CMF Chile",
+  description:
+    "Consulta el estado de resultados detallado publicado por la CMF.",
 };
 
 type SearchParams = Promise<{
   codigo?: string | string[];
-  q?: string | string[];
+  year?: string | string[];
+  month?: string | string[];
 }>;
 
 type Bank = {
@@ -28,11 +29,12 @@ type BankFromApi = {
 type Account = {
   CodigoCuenta?: string;
   DescripcionCuenta?: string;
-  MonedaChilenaNoReajustable?: string | number;
-  MonedaReajustablePorIPC?: string | number;
-  MonedaReajustablePorTipoDeCambio?: string | number;
-  MonedaExtranjera?: string | number;
-  MonedaTotal?: string | number;
+  CodigoInstitucion?: string;
+  NombreInstitucion?: string;
+  Anho?: number;
+  Mes?: number;
+  MonedaChilenaNoReajustable?: string;
+  MonedaTotal?: string;
 };
 
 type ResultTone = "income" | "expense" | "result";
@@ -102,8 +104,6 @@ const MONTHS = [
   "diciembre",
 ];
 
-// La CMF ya entrega estos subtotales oficiales. Se usan directamente para
-// evitar sumar cuentas de distintos niveles y duplicar montos.
 const RESULT_GROUPS: ResultGroup[] = [
   {
     category: "Ingresos",
@@ -217,7 +217,6 @@ class CmfError extends Error {
 }
 
 function getApiKey() {
-  // La clave se lee únicamente en el servidor y nunca se entrega al navegador.
   return (
     process.env.CMF_API_KEY ??
     process.env.API_CMF_KEY ??
@@ -233,8 +232,6 @@ function asArray<T>(value: T[] | T | undefined): T[] {
 }
 
 function parseBanks(value: BankFromApi[] | BankFromApi | undefined): Bank[] {
-  // La API a veces devuelve un objeto y otras veces una lista. También puede
-  // omitir el nombre del código 999 que representa al sistema financiero.
   return asArray(value).flatMap((bank) => {
     const code =
       typeof bank.CodigoInstitucion === "string"
@@ -253,7 +250,6 @@ function parseBanks(value: BankFromApi[] | BankFromApi | undefined): Bank[] {
 }
 
 function errorMessageFromXml(body: string) {
-  // La CMF puede responder errores en XML aunque se haya solicitado JSON.
   const match = body.match(
     /<(?:Mensaje|Message)>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/(?:Mensaje|Message)>/i,
   );
@@ -261,8 +257,6 @@ function errorMessageFromXml(body: string) {
 }
 
 async function requestCmf<T>(path: string, apiKey: string): Promise<T> {
-  // La URL completa se construye dentro del componente de servidor para
-  // mantener la API Key fuera del código JavaScript enviado al cliente.
   const url = new URL(`${API_URL}/${path}`);
   url.searchParams.set("apikey", apiKey);
   url.searchParams.set("formato", "json");
@@ -290,8 +284,6 @@ async function requestCmf<T>(path: string, apiKey: string): Promise<T> {
 }
 
 function recentPeriods(): Period[] {
-  // Los informes mensuales se publican con desfase. Se revisan los últimos
-  // 24 periodos comenzando por el mes anterior.
   const date = new Date();
   date.setUTCDate(1);
   date.setUTCMonth(date.getUTCMonth() - 1);
@@ -303,29 +295,40 @@ function recentPeriods(): Period[] {
   });
 }
 
-async function getLatestBanks(apiKey: string) {
-  // Se prueba cada periodo hasta encontrar el último que tenga instituciones.
+async function getBanksByPeriod(apiKey: string, period: Period) {
+  const monthStr = String(period.month).padStart(2, "0");
+  const data = await requestCmf<BanksResponse>(
+    `${period.year}/${monthStr}/instituciones`,
+    apiKey,
+  );
+  return parseBanks(data.DescripcionesCodigosDeInstituciones);
+}
+
+async function resolveBanksAndPeriod(
+  apiKey: string,
+  requestedPeriod?: Period | null,
+) {
+  if (requestedPeriod) {
+    try {
+      const banks = await getBanksByPeriod(apiKey, requestedPeriod);
+      if (banks.length > 0) return { banks, period: requestedPeriod };
+    } catch (error) {
+      if (!(error instanceof CmfError && error.status === 404)) throw error;
+    }
+  }
+
   let consecutiveServerErrors = 0;
 
   for (const period of recentPeriods()) {
-    const month = String(period.month).padStart(2, "0");
-
     try {
-      const data = await requestCmf<BanksResponse>(
-        `${period.year}/${month}/instituciones`,
-        apiKey,
-      );
-      const banks = parseBanks(data.DescripcionesCodigosDeInstituciones);
-
+      const banks = await getBanksByPeriod(apiKey, period);
       if (banks.length > 0) return { banks, period };
     } catch (error) {
       if (error instanceof CmfError && error.status === 404) continue;
-
       if (error instanceof CmfError && error.status >= 500) {
         consecutiveServerErrors += 1;
         if (consecutiveServerErrors <= 2) continue;
       }
-
       throw error;
     }
   }
@@ -346,15 +349,28 @@ function firstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function normalize(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+function parseYearMonth(
+  yearParam?: string,
+  monthParam?: string,
+): Period | null {
+  if (!yearParam || !monthParam) return null;
+  const year = Number(yearParam);
+  const month = Number(monthParam);
+
+  if (
+    Number.isInteger(year) &&
+    year >= 2000 &&
+    year <= 2100 &&
+    Number.isInteger(month) &&
+    month >= 1 &&
+    month <= 12
+  ) {
+    return { year, month };
+  }
+  return null;
 }
 
 function formatValue(value: string | number | undefined) {
-  // Los montos de la CMF pueden venir como texto con separadores chilenos.
   if (value === undefined || value === "") return "—";
   const number =
     typeof value === "number"
@@ -370,12 +386,10 @@ function formatValue(value: string | number | undefined) {
 
 function indexAccounts(accounts: Account[]) {
   const accountsByCode = new Map<string, Account>();
-
   for (const account of accounts) {
     const code = account.CodigoCuenta?.trim();
     if (code) accountsByCode.set(code, account);
   }
-
   return accountsByCode;
 }
 
@@ -416,14 +430,14 @@ function ResultSummaryCard({
         />
         <p className={`text-sm font-bold ${styles.value}`}>{group.category}</p>
       </div>
-      <h4 className="mt-3 font-semibold text-ink">{group.title}</h4>
+      <h3 className="mt-3 font-semibold text-ink">{group.title}</h3>
       <p
         className={`mt-5 whitespace-nowrap font-mono text-2xl font-bold tracking-tight tabular-nums sm:text-3xl md:text-xl xl:text-2xl ${styles.value}`}
       >
         {formatValue(account?.MonedaTotal)}
       </p>
       <p className="mt-2 text-xs font-medium text-muted">
-        CLP · subtotal oficial CMF
+        CLP · Subtotal oficial CMF
       </p>
     </article>
   );
@@ -508,31 +522,24 @@ function periodName(period: Period) {
 }
 
 function publicError(error: unknown) {
-  // Los códigos técnicos se convierten en mensajes comprensibles para la vista.
   if (error instanceof CmfError && error.status === 420) {
     return "La API key alcanzó el límite mensual de consultas de la CMF.";
   }
-
   if (error instanceof CmfError && error.status === 421) {
     return "La API key de la CMF no es válida.";
   }
-
   if (error instanceof CmfError && error.status === 422) {
     return "La solicitud no incluyó la API key de la CMF.";
   }
-
   if (error instanceof CmfError && error.status >= 500) {
     return "La CMF presenta un problema temporal. Intenta nuevamente en unos minutos.";
   }
-
   return error instanceof Error
     ? error.message
     : "No fue posible conectar con la CMF.";
 }
 
 function BankLogo({ bank }: { bank: Bank }) {
-  // Cada imagen usa el código oficial de la institución. Si no existe una
-  // imagen local se muestran las dos primeras letras como respaldo.
   if (!BANK_LOGO_CODES.has(bank.CodigoInstitucion)) {
     return (
       <span className="grid size-14 place-items-center rounded-xl bg-brand-100 text-sm font-bold text-brand-800">
@@ -559,12 +566,15 @@ export default async function ResultsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  // connection vuelve dinámica la ruta y searchParams es asíncrono en Next 16.
   await connection();
 
   const params = await searchParams;
-  const selectedCode = firstValue(params.codigo)?.trim() ?? "";
-  const query = firstValue(params.q)?.trim() ?? "";
+  // Código por defecto "999" (Sistema Financiero) en caso de no proveer un código específico
+  const selectedCode = firstValue(params.codigo)?.trim() || "999";
+  const yearParam = firstValue(params.year)?.trim();
+  const monthParam = firstValue(params.month)?.trim();
+
+  const requestedPeriod = parseYearMonth(yearParam, monthParam);
   const apiKey = getApiKey();
 
   let banks: Bank[] = [];
@@ -576,9 +586,9 @@ export default async function ResultsPage({
     error = "Falta configurar CMF_API_KEY en el archivo .env.local.";
   } else {
     try {
-      const latest = await getLatestBanks(apiKey);
-      banks = latest.banks;
-      period = latest.period;
+      const resolved = await resolveBanksAndPeriod(apiKey, requestedPeriod);
+      banks = resolved.banks;
+      period = resolved.period;
 
       if (selectedCode && /^\d{3}$/.test(selectedCode)) {
         accounts = await getAccounts(apiKey, period, selectedCode);
@@ -591,13 +601,6 @@ export default async function ResultsPage({
   const selectedBank = banks.find(
     (bank) => bank.CodigoInstitucion === selectedCode,
   );
-  const filteredBanks = query
-    ? banks.filter((bank) =>
-        normalize(
-          `${bank.NombreInstitucion} ${bank.CodigoInstitucion}`,
-        ).includes(normalize(query)),
-      )
-    : banks;
   const accountsByCode = indexAccounts(accounts);
   const featuredGroups = RESULT_GROUPS.filter((group) => group.featured);
 
@@ -611,11 +614,11 @@ export default async function ResultsPage({
             Datos oficiales CMF Chile
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-            Estados de resultados bancarios
+            Estado de Resultados
           </h1>
           <p className="mt-4 text-lg leading-8 text-muted">
-            Busca una institución y consulta las cuentas publicadas para su
-            último período disponible.
+            Consulta los ingresos, gastos y el resultado neto de las
+            instituciones bancarias informadas a la CMF.
           </p>
         </section>
 
@@ -628,251 +631,135 @@ export default async function ResultsPage({
             <p className="mt-1 text-sm">{error}</p>
           </div>
         ) : (
-          <>
-            <section className="mt-10" aria-labelledby="banks-title">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                <div>
-                  <h2 id="banks-title" className="text-2xl font-bold text-ink">
-                    Instituciones
-                  </h2>
-                  {period && (
-                    <p className="mt-1 text-sm text-muted">
-                      Período: {periodName(period)}
+          selectedBank &&
+          period && (
+            <div className="mt-10 space-y-10">
+              <header className="rounded-2xl border border-line bg-panel p-5 shadow-sm sm:p-6">
+                <div className="flex items-start gap-4">
+                  <BankLogo bank={selectedBank} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-brand-700">
+                      Estado de Resultados
                     </p>
-                  )}
+                    <h2 className="mt-1 text-2xl font-bold text-ink">
+                      {selectedBank.NombreInstitucion}
+                    </h2>
+                    <p className="mt-2 text-sm text-muted">
+                      Código {selectedBank.CodigoInstitucion} · Período
+                      informado: {periodName(period)}
+                    </p>
+                  </div>
+                </div>
+              </header>
+
+              {/* Resumen en Tarjetas */}
+              <section aria-labelledby="summary-title">
+                <div className="max-w-3xl">
+                  <p className="text-sm font-bold uppercase tracking-widest text-brand-700">
+                    Vista rápida
+                  </p>
+                  <h3
+                    id="summary-title"
+                    className="mt-2 text-2xl font-bold text-ink"
+                  >
+                    Resumen del período
+                  </h3>
                 </div>
 
-                <form
-                  action="/resultados"
-                  className="flex w-full max-w-md gap-2"
-                >
-                  <label htmlFor="q" className="sr-only">
-                    Buscar banco
-                  </label>
-                  <input
-                    id="q"
-                    name="q"
-                    type="search"
-                    defaultValue={query}
-                    placeholder="Nombre o código"
-                    className="min-h-11 min-w-0 flex-1 rounded-lg border border-line bg-panel px-3 outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
-                  />
-                  <button className="min-h-11 rounded-lg bg-brand-700 px-4 font-semibold text-white hover:bg-brand-800">
-                    Buscar
-                  </button>
-                </form>
-              </div>
-
-              {filteredBanks.length === 0 ? (
-                <p className="mt-6 rounded-xl border border-line bg-panel p-6 text-muted">
-                  No encontramos bancos con esa búsqueda.
-                </p>
-              ) : (
-                <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {filteredBanks.map((bank) => (
-                    <article
-                      key={bank.CodigoInstitucion}
-                      className="flex flex-col rounded-xl border border-line bg-panel p-5 shadow-sm"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <BankLogo bank={bank} />
-                        <span className="rounded-full bg-slate-100 px-3 py-1 font-mono text-xs text-muted">
-                          {bank.CodigoInstitucion}
-                        </span>
-                      </div>
-                      <h3 className="mt-4 flex-1 font-bold text-ink">
-                        {bank.NombreInstitucion}
-                      </h3>
-                      <div className="mt-5 grid grid-cols-2 gap-2">
-                        <Link
-                          href={`/balances?codigo=${bank.CodigoInstitucion}`}
-                          className="rounded-lg border border-line px-3 py-2 text-center text-sm font-semibold hover:bg-brand-50"
-                        >
-                          Ver balance
-                        </Link>
-                        <Link
-                          href={`/resultados?codigo=${bank.CodigoInstitucion}#detalle`}
-                          className="rounded-lg bg-brand-700 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-brand-800"
-                        >
-                          Ver resultados
-                        </Link>
-                      </div>
-                    </article>
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
+                  {featuredGroups.map((group) => (
+                    <ResultSummaryCard
+                      key={group.totalCode}
+                      group={group}
+                      account={accountsByCode.get(group.totalCode)}
+                    />
                   ))}
                 </div>
-              )}
-            </section>
-
-            {selectedCode && !selectedBank && (
-              <p
-                role="alert"
-                className="mt-10 rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-900"
-              >
-                El código seleccionado no corresponde a una institución del
-                período.
-              </p>
-            )}
-
-            {selectedBank && period && (
-              <section id="detalle" className="mt-12 scroll-mt-6 space-y-8">
-                <header className="rounded-2xl border border-line bg-panel p-5 shadow-sm sm:p-6">
-                  <div className="flex items-start gap-4">
-                    <BankLogo bank={selectedBank} />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-brand-700">
-                        Estado de resultados
-                      </p>
-                      <h2 className="mt-1 text-2xl font-bold text-ink">
-                        {selectedBank.NombreInstitucion}
-                      </h2>
-                      <p className="mt-2 text-sm text-muted">
-                        Código {selectedBank.CodigoInstitucion} · Período
-                        informado: {periodName(period)}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-5 max-w-3xl text-sm leading-6 text-muted">
-                    Primero se muestran los principales subtotales oficiales.
-                    Abre cada sección para entender cómo se compone el resultado
-                    o consulta la tabla técnica completa al final.
-                  </p>
-                </header>
-
-                <section aria-labelledby="summary-title">
-                  <div className="max-w-3xl">
-                    <p className="text-sm font-bold uppercase tracking-widest text-brand-700">
-                      Vista rápida
-                    </p>
-                    <h3
-                      id="summary-title"
-                      className="mt-2 text-2xl font-bold text-ink"
-                    >
-                      Resumen fácil de entender
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-muted">
-                      Son valores publicados por la CMF. No se realizan cálculos
-                      adicionales.
-                    </p>
-                  </div>
-
-                  <div className="mt-5 grid gap-4 md:grid-cols-3">
-                    {featuredGroups.map((group) => (
-                      <ResultSummaryCard
-                        key={group.totalCode}
-                        group={group}
-                        account={accountsByCode.get(group.totalCode)}
-                      />
-                    ))}
-                  </div>
-                </section>
-
-                <section aria-labelledby="breakdown-title">
-                  <h3
-                    id="breakdown-title"
-                    className="text-2xl font-bold text-ink"
-                  >
-                    ¿Cómo se compone el resultado?
-                  </h3>
-                  <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-                    Selecciona una categoría para revisar sus principales
-                    componentes sin recorrer cientos de códigos.
-                  </p>
-
-                  {/* details permite desplegar información sin agregar estado ni JavaScript al cliente. */}
-                  <div className="mt-5 space-y-3">
-                    {RESULT_GROUPS.map((group) => (
-                      <ResultBreakdown
-                        key={group.totalCode}
-                        group={group}
-                        accountsByCode={accountsByCode}
-                      />
-                    ))}
-                  </div>
-                </section>
-
-                <details className="group overflow-hidden rounded-2xl border border-line bg-panel shadow-sm">
-                  <summary className="flex min-h-14 cursor-pointer list-none items-center gap-4 px-5 py-4 outline-none transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 [&::-webkit-details-marker]:hidden">
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-bold text-ink">
-                        Detalle técnico completo
-                      </span>
-                      <span className="mt-1 block text-sm text-muted">
-                        {accounts.length.toLocaleString("es-CL")} cuentas y
-                        códigos informados por la CMF
-                      </span>
-                    </span>
-                    <ChevronIcon />
-                  </summary>
-
-                  <div className="border-t border-line">
-                    <p className="bg-slate-50 px-5 py-4 text-sm leading-6 text-muted">
-                      Esta tabla conserva todas las monedas cuentas y subtotales
-                      tal como fueron recibidos desde la CMF.
-                    </p>
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-[960px] text-left text-sm">
-                        <caption className="sr-only">
-                          Detalle técnico del estado de resultados de{" "}
-                          {selectedBank.NombreInstitucion}
-                        </caption>
-                        <thead className="bg-slate-50 text-slate-600">
-                          <tr>
-                            <th className="px-4 py-3">Código</th>
-                            <th className="px-4 py-3">Cuenta</th>
-                            <th className="px-4 py-3 text-right">
-                              CLP no reaj.
-                            </th>
-                            <th className="px-4 py-3 text-right">Reaj. IPC</th>
-                            <th className="px-4 py-3 text-right">
-                              Tipo cambio
-                            </th>
-                            <th className="px-4 py-3 text-right">
-                              Moneda extranjera
-                            </th>
-                            <th className="px-4 py-3 text-right">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {accounts.map((account, index) => (
-                            <tr key={`${account.CodigoCuenta}-${index}`}>
-                              <td className="whitespace-nowrap px-4 py-3 font-mono text-brand-700">
-                                {account.CodigoCuenta ?? "—"}
-                              </td>
-                              <th
-                                scope="row"
-                                className="px-4 py-3 font-medium text-slate-800"
-                              >
-                                {account.DescripcionCuenta ?? "Sin descripción"}
-                              </th>
-                              <td className="whitespace-nowrap px-4 py-3 text-right">
-                                {formatValue(
-                                  account.MonedaChilenaNoReajustable,
-                                )}
-                              </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-right">
-                                {formatValue(account.MonedaReajustablePorIPC)}
-                              </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-right">
-                                {formatValue(
-                                  account.MonedaReajustablePorTipoDeCambio,
-                                )}
-                              </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-right">
-                                {formatValue(account.MonedaExtranjera)}
-                              </td>
-                              <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-ink">
-                                {formatValue(account.MonedaTotal)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </details>
               </section>
-            )}
-          </>
+
+              {/* Desglose por Categorías */}
+              <section aria-labelledby="breakdown-title">
+                <h3
+                  id="breakdown-title"
+                  className="text-2xl font-bold text-ink"
+                >
+                  Composición del resultado
+                </h3>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
+                  Desglose de las principales cuentas operacionales y finales.
+                </p>
+
+                <div className="mt-5 space-y-3">
+                  {RESULT_GROUPS.map((group) => (
+                    <ResultBreakdown
+                      key={group.totalCode}
+                      group={group}
+                      accountsByCode={accountsByCode}
+                    />
+                  ))}
+                </div>
+              </section>
+
+              {/* Tabla Técnica Completa */}
+              <details className="group overflow-hidden rounded-2xl border border-line bg-panel shadow-sm">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-4 px-5 py-4 outline-none transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 [&::-webkit-details-marker]:hidden">
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-bold text-ink">
+                      Detalle técnico completo
+                    </span>
+                    <span className="mt-1 block text-sm text-muted">
+                      {accounts.length.toLocaleString("es-CL")} cuentas y
+                      códigos informados por la CMF
+                    </span>
+                  </span>
+                  <ChevronIcon />
+                </summary>
+
+                <div className="border-t border-line">
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[640px] text-left text-sm">
+                      <caption className="sr-only">
+                        Detalle técnico del estado de resultados de{" "}
+                        {selectedBank.NombreInstitucion}
+                      </caption>
+                      <thead className="bg-slate-50 text-slate-600">
+                        <tr>
+                          <th className="px-4 py-3">Código</th>
+                          <th className="px-4 py-3">Cuenta</th>
+                          <th className="px-4 py-3 text-right">
+                            Moneda Chilena No Reaj.
+                          </th>
+                          <th className="px-4 py-3 text-right">Moneda Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {accounts.map((account, index) => (
+                          <tr key={`${account.CodigoCuenta}-${index}`}>
+                            <td className="whitespace-nowrap px-4 py-3 font-mono text-brand-700">
+                              {account.CodigoCuenta ?? "—"}
+                            </td>
+                            <th
+                              scope="row"
+                              className="px-4 py-3 font-medium text-slate-800"
+                            >
+                              {account.DescripcionCuenta ?? "Sin descripción"}
+                            </th>
+                            <td className="whitespace-nowrap px-4 py-3 text-right font-mono">
+                              {formatValue(account.MonedaChilenaNoReajustable)}{" "}
+                              CLP
+                            </td>
+                            <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-bold text-ink">
+                              {formatValue(account.MonedaTotal)} CLP
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </details>
+            </div>
+          )
         )}
       </main>
 

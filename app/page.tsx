@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function Page() {
-  redirect("/bancos?year=2025&month=12");
+  redirect("/bancos?year=2026&month=06");
 }

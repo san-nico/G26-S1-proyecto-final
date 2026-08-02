@@ -4,27 +4,75 @@ import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 
 export const metadata: Metadata = {
-  title: "Balance de Institución | CMF Chile",
-  description: "Consulta el balance general de una institución bancaria.",
+  title: "Resumen de Balance | CMF Chile",
+  description:
+    "Consulta el resumen del balance general de una institución bancaria.",
 };
 
 // ==========================================
-// 1. TIPOS Y HELPERS
+// 1. TIPOS Y CONSTANTES
 // ==========================================
 
 type Account = {
   CodigoCuenta?: string;
   DescripcionCuenta?: string;
-  CodigoInstitucion?: string;
   NombreInstitucion?: string;
-  Anho?: number | string;
-  Mes?: number | string;
-  MonedaChilenaNoReajustable?: string | number;
-  MonedaReajustablePorIPC?: string | number;
-  MonedaReajustablePorTipoDeCambio?: string | number;
-  MonedaExtranjera?: string | number;
   MonedaTotal?: string | number;
 };
+
+type BalanceGroup = {
+  category: string;
+  title: string;
+  totalCode: string;
+  tone: "activo" | "pasivo" | "patrimonio";
+};
+
+// Cuentas de nivel general CMF para el resumen
+const BALANCE_SUMMARY_GROUPS: BalanceGroup[] = [
+  {
+    category: "Activo",
+    title: "Activo Total",
+    totalCode: "100000000",
+    tone: "activo",
+  },
+  {
+    category: "Pasivo",
+    title: "Pasivo Total",
+    totalCode: "200000000",
+    tone: "pasivo",
+  },
+  {
+    category: "Patrimonio",
+    title: "Patrimonio Total",
+    totalCode: "300000000",
+    tone: "patrimonio",
+  },
+];
+
+const BALANCE_TONE_STYLES: Record<
+  BalanceGroup["tone"],
+  { card: string; dot: string; value: string }
+> = {
+  activo: {
+    card: "border-emerald-200 bg-emerald-50/50",
+    dot: "bg-emerald-600",
+    value: "text-emerald-700",
+  },
+  pasivo: {
+    card: "border-amber-200 bg-amber-50/50",
+    dot: "bg-amber-600",
+    value: "text-amber-700",
+  },
+  patrimonio: {
+    card: "border-sky-200 bg-sky-50/50",
+    dot: "bg-sky-600",
+    value: "text-sky-700",
+  },
+};
+
+// ==========================================
+// 2. HELPERS Y SERVICIOS
+// ==========================================
 
 function formatPeriod(year?: string, month?: string): string {
   const now = new Date();
@@ -41,17 +89,28 @@ function formatPeriod(year?: string, month?: string): string {
   return `${capitalizedMonth} de ${y}`;
 }
 
-function parseBalanceAccounts(data: any): Account[] {
-  const raw = data?.CodigosBalances;
-  if (!raw) return [];
-  return Array.isArray(raw) ? raw : [raw];
+function parseNumber(value: string | number | undefined): number | null {
+  if (value === undefined || value === null || value === "") return null;
+  const number =
+    typeof value === "number"
+      ? value
+      : Number(value.toString().replace(/\./g, "").replace(",", "."));
+  return Number.isFinite(number) ? number : null;
 }
 
-async function getBalanceAccounts(
+function formatValue(value: string | number | undefined) {
+  const num = parseNumber(value);
+  if (num === null) return value ?? "—";
+  return new Intl.NumberFormat("es-CL", { maximumFractionDigits: 2 }).format(
+    num,
+  );
+}
+
+async function getBalanceSummary(
   code: string,
   year?: string,
   month?: string,
-): Promise<Account[]> {
+): Promise<{ bankName: string; accountsByCode: Map<string, Account> }> {
   const apiKey =
     process.env.CMF_API_KEY || "d3217c0d406feca58306af437eb4c783de05febb";
 
@@ -62,12 +121,11 @@ async function getBalanceAccounts(
     "0",
   );
 
-  // Endpoint oficial corregido: balances/<year>/<month>/instituciones/<code>
   const url = `https://api.cmfchile.cl/api-sbifv3/recursos_api/balances/${selectedYear}/${selectedMonth}/instituciones/${code}?apikey=${apiKey}&formato=json`;
 
   const res = await fetch(url, {
     headers: { Accept: "application/json" },
-    cache: "no-store",
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) {
@@ -76,76 +134,32 @@ async function getBalanceAccounts(
         `No se encontraron datos de balance para la institución ${code} en el período ${selectedMonth}/${selectedYear}.`,
       );
     }
-    throw new Error(
-      `Error al consultar la CMF (${res.status}): No se pudo obtener el balance.`,
-    );
+    throw new Error(`Error al consultar la CMF (${res.status}).`);
   }
 
   const data = await res.json();
-  return parseBalanceAccounts(data);
-}
+  const raw = data?.CodigosBalances;
+  const accounts: Account[] = Array.isArray(raw) ? raw : raw ? [raw] : [];
 
-function formatValue(value: string | number | undefined) {
-  if (value === undefined || value === "") return "—";
+  const accountsByCode = new Map<string, Account>();
+  let bankName = "";
 
-  // Reemplaza puntos de miles y coma decimal del formato devuelto por CMF
-  const number =
-    typeof value === "number"
-      ? value
-      : Number(value.toString().replace(/\./g, "").replace(",", "."));
+  for (const acc of accounts) {
+    const accountCode = acc.CodigoCuenta?.trim();
+    if (accountCode) {
+      accountsByCode.set(accountCode, acc);
+    }
+    if (!bankName && acc.NombreInstitucion) {
+      bankName = acc.NombreInstitucion;
+    }
+  }
 
-  return Number.isFinite(number)
-    ? new Intl.NumberFormat("es-CL", { maximumFractionDigits: 2 }).format(
-        number,
-      )
-    : value;
+  return { bankName, accountsByCode };
 }
 
 // ==========================================
-// 2. SUBCOMPONENTES
+// 3. COMPONENTES VISUALES
 // ==========================================
-
-function BalanceHeader({
-  code,
-  year,
-  month,
-  bankName,
-}: {
-  code: string;
-  year?: string;
-  month?: string;
-  bankName?: string;
-}) {
-  const periodText = formatPeriod(year, month);
-
-  return (
-    <section className="max-w-3xl">
-      <div className="flex flex-wrap items-center gap-3">
-        <Link
-          href="/"
-          className="text-xs font-semibold text-brand-700 hover:underline"
-        >
-          ← Volver a instituciones
-        </Link>
-        <span className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800 ring-1 ring-inset ring-brand-600/20">
-          Periodo: {periodText}
-        </span>
-      </div>
-
-      <h1 className="mt-3 text-4xl font-bold tracking-tight text-ink sm:text-5xl">
-        Balance de Institución
-      </h1>
-
-      <p className="mt-4 text-lg leading-8 text-muted">
-        Detalle del balance financiero para{" "}
-        <span className="font-bold text-ink">
-          {bankName ? bankName : `código ${code}`}
-        </span>
-        .
-      </p>
-    </section>
-  );
-}
 
 function ErrorMessage({ message }: { message: string }) {
   return (
@@ -159,133 +173,136 @@ function ErrorMessage({ message }: { message: string }) {
   );
 }
 
-function BalanceTable({ accounts }: { accounts: Account[] }) {
-  if (accounts.length === 0) {
-    return (
-      <p className="mt-6 rounded-xl border border-line bg-panel p-6 text-muted">
-        No hay cuentas registradas para esta consulta.
-      </p>
-    );
-  }
+function BalanceSummaryCard({
+  group,
+  account,
+}: {
+  group: BalanceGroup;
+  account?: Account;
+}) {
+  const styles = BALANCE_TONE_STYLES[group.tone];
 
   return (
-    <div className="mt-8 overflow-hidden rounded-2xl border border-line bg-panel shadow-sm">
-      <div className="border-b border-line bg-slate-50 px-5 py-4">
-        <h2 className="font-bold text-ink">Cuentas de Balance</h2>
-        <p className="mt-1 text-sm text-muted">
-          Se cargaron {accounts.length} registros desde el servicio de la CMF.
+    <article
+      className={`overflow-hidden rounded-2xl border p-5 shadow-sm ${styles.card}`}
+    >
+      <div className="flex items-center gap-2">
+        <span
+          aria-hidden="true"
+          className={`size-2.5 shrink-0 rounded-full ${styles.dot}`}
+        />
+        <p className={`text-sm font-bold truncate ${styles.value}`}>
+          {group.category}
         </p>
       </div>
+      <h3 className="mt-2 font-semibold text-ink truncate">{group.title}</h3>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] text-left text-sm">
-          <thead className="bg-slate-50 text-slate-600">
-            <tr>
-              <th className="px-4 py-3">Código</th>
-              <th className="px-4 py-3">Cuenta</th>
-              <th className="px-4 py-3 text-right">CLP no reaj.</th>
-              <th className="px-4 py-3 text-right">Reaj. IPC</th>
-              <th className="px-4 py-3 text-right">Tipo cambio</th>
-              <th className="px-4 py-3 text-right">Moneda extranjera</th>
-              <th className="px-4 py-3 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
-            {accounts.map((account, index) => (
-              <tr key={`${account.CodigoCuenta}-${index}`}>
-                <td className="whitespace-nowrap px-4 py-3 font-mono font-bold text-brand-700">
-                  {account.CodigoCuenta ?? "—"}
-                </td>
-                <th
-                  scope="row"
-                  className="px-4 py-3 font-medium text-slate-800"
-                >
-                  {account.DescripcionCuenta ?? "Sin descripción"}
-                </th>
-                <td className="whitespace-nowrap px-4 py-3 text-right">
-                  {formatValue(account.MonedaChilenaNoReajustable)}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 text-right">
-                  {formatValue(account.MonedaReajustablePorIPC)}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 text-right">
-                  {formatValue(account.MonedaReajustablePorTipoDeCambio)}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 text-right">
-                  {formatValue(account.MonedaExtranjera)}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 text-right font-bold text-ink">
-                  {formatValue(account.MonedaTotal)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      {/* Monto adaptado: tamaño más pequeño, prevención de desbordamiento y tooltip nativo */}
+      <p
+        title={formatValue(account?.MonedaTotal)}
+        className={`mt-3 truncate font-mono text-xl font-bold tracking-tight tabular-nums sm:text-2xl ${styles.value}`}
+      >
+        {formatValue(account?.MonedaTotal)}
+      </p>
+
+      <p className="mt-1 truncate text-xs font-medium text-muted">
+        CLP · Subtotal oficial CMF
+      </p>
+    </article>
   );
 }
 
 // ==========================================
-// 3. COMPONENTE PRINCIPAL (PÁGINA)
+// 4. COMPONENTE PRINCIPAL (PÁGINA)
 // ==========================================
 
-export default async function BalancePage({
-  searchParams,
-}: {
-  searchParams: Promise<{
+export default async function BalancePage(props: {
+  searchParams?: Promise<{
     codigo?: string | string[];
     year?: string | string[];
     month?: string | string[];
   }>;
 }) {
-  const params = await searchParams;
+  const searchParams = await props.searchParams;
 
-  const rawCode = Array.isArray(params.codigo)
-    ? params.codigo[0]
-    : params.codigo;
-  const rawYear = Array.isArray(params.year) ? params.year[0] : params.year;
-  const rawMonth = Array.isArray(params.month) ? params.month[0] : params.month;
+  const rawCode = Array.isArray(searchParams?.codigo)
+    ? searchParams.codigo[0]
+    : searchParams?.codigo;
+  const rawYear = Array.isArray(searchParams?.year)
+    ? searchParams.year[0]
+    : searchParams?.year;
+  const rawMonth = Array.isArray(searchParams?.month)
+    ? searchParams.month[0]
+    : searchParams?.month;
 
   const code = rawCode?.trim();
   const year = rawYear?.trim();
   const month = rawMonth?.trim();
 
-  let accounts: Account[] = [];
+  const periodText = formatPeriod(year, month);
+
+  let bankName = "";
+  let accountsByCode = new Map<string, Account>();
   let error = "";
 
-  if (!code) {
-    error =
-      "No se proporcionó un código de institución en la URL (?codigo=012).";
-  } else {
+  if (code) {
     try {
-      accounts = await getBalanceAccounts(code, year, month);
+      const data = await getBalanceSummary(code, year, month);
+      bankName = data.bankName;
+      accountsByCode = data.accountsByCode;
     } catch (err) {
       error =
         err instanceof Error ? err.message : "Error al cargar el balance.";
     }
   }
 
-  const bankName = accounts[0]?.NombreInstitucion;
-
   return (
     <div className="flex min-h-dvh flex-col bg-page">
       <Navbar />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 sm:py-14">
-        {code && (
-          <BalanceHeader
-            code={code}
-            year={year}
-            month={month}
-            bankName={bankName}
-          />
-        )}
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6 sm:py-14">
+        <section className="max-w-3xl">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/"
+              className="text-xs font-semibold text-brand-700 hover:underline"
+            >
+              ← Volver a instituciones
+            </Link>
+            <span className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800 ring-1 ring-inset ring-brand-600/20">
+              Periodo: {periodText}
+            </span>
+          </div>
 
-        {error ? (
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+            Resumen de Balance
+          </h1>
+
+          {code && (
+            <p className="mt-3 text-base text-muted">
+              Principales agregados patrimoniales de la institución{" "}
+              <span className="font-mono font-bold text-ink">{code}</span>
+              {bankName ? ` (${bankName})` : ""}.
+            </p>
+          )}
+        </section>
+
+        {!code ? (
+          <ErrorMessage message="No se proporcionó un código de institución en la URL (?codigo=012)." />
+        ) : error ? (
           <ErrorMessage message={error} />
         ) : (
-          <BalanceTable accounts={accounts} />
+          <section className="mt-8" aria-label="Tarjetas de resumen de balance">
+            <div className="grid gap-4 md:grid-cols-3">
+              {BALANCE_SUMMARY_GROUPS.map((group) => (
+                <BalanceSummaryCard
+                  key={group.totalCode}
+                  group={group}
+                  account={accountsByCode.get(group.totalCode)}
+                />
+              ))}
+            </div>
+          </section>
         )}
       </main>
 
