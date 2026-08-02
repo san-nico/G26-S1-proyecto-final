@@ -199,7 +199,6 @@ function BalanceSummaryCard({
 
       {/* Monto adaptado: tamaño más pequeño, prevención de desbordamiento y tooltip nativo */}
       <p
-        title={formatValue(account?.MonedaTotal)}
         className={`mt-3 truncate font-mono text-xl font-bold tracking-tight tabular-nums sm:text-2xl ${styles.value}`}
       >
         {formatValue(account?.MonedaTotal)}

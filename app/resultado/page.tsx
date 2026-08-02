@@ -356,7 +356,6 @@ function ResultSummaryCard({
 
       {/* Monto adaptado: tamaño más pequeño y prevención de desbordamiento */}
       <p
-        title={formatValue(account?.MonedaTotal)}
         className={`mt-3 font-mono text-xl sm:text-2xl font-bold tracking-tight tabular-nums truncate ${styles.value}`}
       >
         {formatValue(account?.MonedaTotal)}
