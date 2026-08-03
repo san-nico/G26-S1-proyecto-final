@@ -1,83 +1,103 @@
-# G26 S1 Proyecto Final
+# CMF Bancos
 
-Proyecto universitario desarrollado con Next.js y Tailwind CSS para consultar informacion bancaria publicada por la Comision para el Mercado Financiero de Chile.
+CMF Bancos es una aplicación web desarrollada con Next.js para consultar información financiera de instituciones bancarias en Chile, utilizando datos públicos disponibilizados por la Comisión para el Mercado Financiero (CMF) a través de la API de SBIF.
 
-## Funcionalidades
+La aplicación permite explorar instituciones bancarias, revisar información resumida de balances y estados de resultados, y visualizar datos financieros por período (año y mes). Está orientada a facilitar la consulta rápida de información financiera de forma clara y moderna.
 
-- Pagina de inicio con acceso a las consultas principales.
-- Listado y busqueda de instituciones bancarias.
-- Consulta del ultimo balance mensual disponible.
-- Consulta del ultimo estado de resultados disponible.
-- Resumen visual de ingresos gastos y resultado usando subtotales oficiales.
-- Secciones desplegables para entender las cuentas sin perder el detalle tecnico.
-- Tablas con las cuentas informadas por la CMF.
-- Logos locales para identificar cada banco.
-- Mensajes claros para errores de conexion o de la API Key.
+## 🚀 Descripción del proyecto
 
-## Arquitectura del proyecto
+Este proyecto fue creado como una solución web para consultar datos financieros institucionales de forma sencilla y accesible. Su propósito principal es mostrar información proveniente de la API de la CMF en una interfaz amigable, organizada por secciones:
 
-Se conserva la arquitectura base entregada en el repositorio. El contenido propio de cada ruta permanece dentro de su archivo `page.tsx`.
+- Listado de instituciones bancarias registradas.
+- Resumen de balances por institución.
+- Resumen de resultados por institución.
 
-```text
-app/
-├── balances/
-│   └── page.tsx             # Consulta de balances
-├── landing/
-│   └── page.tsx             # Pagina de inicio
-├── resultados/
-│   ├── loading.tsx          # Estado de carga
-│   └── page.tsx             # Consulta de resultados
-├── globals.css              # Tailwind y tema general
-├── layout.tsx               # Layout principal y metadata
-└── page.tsx                 # Redireccion hacia landing
+## 🛠️ Tecnologías utilizadas
 
-components/
-└── global/
-    ├── Footer.tsx           # Pie compartido
-    └── Navbar.tsx           # Navegacion compartida
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS y CSS Modules
 
-public/
-└── bank-logos/              # Logos bancarios por codigo CMF
+## 📦 Requisitos previos
+
+Antes de ejecutar el proyecto, asegúrate de tener instalado:
+
+- Node.js 20 o superior
+- npm o pnpm
+
+## ⚙️ Instalación
+
+1. Clona este repositorio:
+
+```bash
+git clone https://github.com/san-nico/G26-S1-proyecto-final
 ```
 
-`Navbar` y `Footer` son los unicos componentes visuales compartidos. Los formularios las tarjetas las tablas y la logica de cada consulta se mantienen en sus paginas correspondientes.
-
-## API Key de la CMF
-
-Para este trabajo academico Francisco Labra autorizo compartir la API Key con sus companeros. La clave se encuentra en `.env.example`.
-
-Para usarla se debe crear `.env.local` a partir del ejemplo:
-
-```powershell
-Copy-Item .env.example .env.local
-```
-
-La variable utilizada por el proyecto es:
-
-```env
-CMF_API_KEY=clave_entregada_por_la_cmf
-```
-
-Aunque la clave se comparte para fines academicos las consultas se realizan desde componentes de servidor. La clave no se envia mediante codigo JavaScript al navegador.
-
-La CMF establece una cuota mensual de consultas. Todos los integrantes deben evitar recargar las paginas de manera innecesaria.
-
-## Ejecutar el proyecto
+2. Instala las dependencias:
 
 ```bash
 npm install
+```
+
+3. Crea un archivo `.env.local` en la raíz del proyecto con tu clave de la API de la CMF:
+
+```env
+CMF_API_KEY=tu_clave_aqui
+```
+
+> La aplicación depende de esta variable para poder consumir los datos desde la API pública de la CMF.
+
+## ▶️ Ejecución local
+
+Inicia el servidor de desarrollo:
+
+```bash
 npm run dev
 ```
 
-Luego se puede abrir:
+Luego abre tu navegador en:
 
-- `http://localhost:3000/landing`
-- `http://localhost:3000/balances`
-- `http://localhost:3000/resultados`
+```text
+http://localhost:3000
+```
 
-## Verificaciones
+## 🧪 Scripts disponibles
+
+Inicia la aplicación en modo desarrollo.
+
+```bash
+npm run dev
+```
+
+Genera la versión de producción para despliegue.
+
+```bash
+npm run build
+```
+
+Ejecuta la versión compilada de la aplicación.
+
+```bash
+npm run start
+```
+
+Ejecuta el análisis estático de ESLint.
 
 ```bash
 npm run lint
-npm run build
 ```
+
+## 🌐 Flujo de uso
+
+La aplicación cuenta con tres secciones principales:
+
+- Bancos: muestra el listado de instituciones bancarias.
+- Balance: permite visualizar un resumen del balance de una institución específica.
+- Resultado: permite ver el resumen de resultados financieros de una institución específica.
+
+## 🔌 Integración con la API
+
+El proyecto consulta datos desde la API de balances y resultados proporcionada por la CMF/SBIF. Para que la aplicación funcione correctamente, es necesario contar con una clave válida en la variable de entorno `CMF_API_KEY`.
+
+Los datos se obtienen en tiempo real al cargar las páginas correspondientes y se representan de forma resumida en tarjetas y vistas estructuradas.
