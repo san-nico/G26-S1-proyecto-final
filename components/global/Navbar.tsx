@@ -7,24 +7,6 @@ export default function Navbar() {
         <Link href="/" className="text-lg font-bold text-brand-800">
           CMF Bancos
         </Link>
-
-        <div className="flex gap-1 text-sm font-semibold text-slate-700">
-          <Link href="/" className="rounded-lg px-3 py-2 hover:bg-brand-50">
-            Inicio
-          </Link>
-          <Link
-            href="/balances"
-            className="rounded-lg px-3 py-2 hover:bg-brand-50"
-          >
-            Balances
-          </Link>
-          <Link
-            href="/resultados"
-            className="rounded-lg px-3 py-2 hover:bg-brand-50"
-          >
-            Resultados
-          </Link>
-        </div>
       </nav>
     </header>
   );
