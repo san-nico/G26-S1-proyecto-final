@@ -1,7 +1,16 @@
+// src/components/ui/LoadingState.tsx
 import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 
-export default function Loading() {
+interface LoadingStateProps {
+  title?: string;
+  description?: string;
+}
+
+export default function LoadingState({
+  title = "Consultando la CMF",
+  description = "Buscando la información solicitada.",
+}: LoadingStateProps) {
   return (
     <div className="flex min-h-dvh flex-col bg-page">
       <Navbar />
@@ -13,10 +22,8 @@ export default function Loading() {
           className="w-full max-w-md rounded-xl border border-line bg-panel p-6 text-center shadow-sm"
         >
           <span className="mx-auto block size-9 animate-spin rounded-full border-4 border-brand-100 border-t-brand-700" />
-          <h1 className="mt-5 font-bold text-ink">Consultando la CMF</h1>
-          <p className="mt-1 text-sm text-muted">
-            Buscando el último período disponible.
-          </p>
+          <h1 className="mt-5 font-bold text-ink">{title}</h1>
+          <p className="mt-1 text-sm text-muted">{description}</p>
         </div>
       </main>
 
