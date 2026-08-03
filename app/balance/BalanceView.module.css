@@ -1,0 +1,191 @@
+.pageContainer {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  background-color: var(--bg-page, #f8fafc);
+}
+
+.mainContent {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 64rem;
+  flex: 1 1 0%;
+  padding: 2.5rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .mainContent {
+    padding: 3.5rem 1.5rem;
+  }
+}
+
+.heroSection {
+  max-width: 42rem;
+}
+
+.badge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #047857;
+}
+
+.title {
+  margin-top: 0.75rem;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: 3rem;
+    line-height: 1;
+  }
+}
+
+.errorAlert {
+  margin-top: 2rem;
+  border-radius: 0.75rem;
+  border: 1px solid #fde68a;
+  background-color: #fffbeb;
+  padding: 1.25rem;
+  color: #78350f;
+}
+
+.errorMessage {
+  font-weight: 700;
+}
+
+.summaryWrapper {
+  margin-top: 2.5rem;
+}
+
+.summaryWrapper > * + * {
+  margin-top: 2rem;
+}
+
+.bankHeader {
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 640px) {
+  .bankHeader {
+    padding: 1.5rem;
+  }
+}
+
+.headerCategory {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #047857;
+}
+
+.bankName {
+  margin-top: 0.25rem;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.metaPeriod {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  overflow: hidden;
+  border-radius: 1rem;
+  border-width: 1px;
+  border-style: solid;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Variaciones por categoría */
+.cardActivo {
+  border-color: #a7f3d0;
+  background-color: rgba(236, 253, 245, 0.6);
+  color: #047857;
+}
+
+.cardPasivo {
+  border-color: #fde68a;
+  background-color: rgba(254, 243, 199, 0.6);
+  color: #b45309;
+}
+
+.cardPatrimonio {
+  border-color: #bae6fd;
+  background-color: rgba(240, 249, 255, 0.6);
+  color: #0369a1;
+}
+
+.cardCategory {
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardTitle {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cardAmount {
+  margin-top: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 640px) {
+  .cardAmount {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
+
+.cardFooter {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
