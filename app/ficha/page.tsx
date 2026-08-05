@@ -1,3 +1,5 @@
+import Footer from "@/components/global/Footer";
+import Navbar from "@/components/global/Navbar";
 import React from "react";
 
 interface PerfilResponse {
@@ -53,7 +55,11 @@ export default async function Page() {
       : "No disponible";
 
     return (
+        <>
+        <Navbar/>
+        
       <main className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-blue-50 py-12 px-4 sm:px-6">
+        
         <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl bg-white shadow-xl border border-slate-100">
           {/* Header con acento de color */}
           <div className="bg-gradient-to-r from-blue-700 to-indigo-800 p-8 text-white relative">
@@ -136,6 +142,8 @@ export default async function Page() {
           </div>
         </div>
       </main>
+      <Footer/>
+      </>
     );
   } catch (error) {
     return (
