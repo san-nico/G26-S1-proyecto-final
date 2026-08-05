@@ -18,7 +18,9 @@ export default function BankCard({
 }: BankCardProps) {
   const balanceUrl = `/balance?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
   const resultadoUrl = `/resultado?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
+  const fichaUrl = `/ficha?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
 
+  
   return (
     <article className={styles.card}>
       <div className={styles.cardHeader}>
@@ -41,14 +43,20 @@ export default function BankCard({
 
       <div className={styles.cardActions}>
         <Link href={balanceUrl} target="_blank" className={styles.actionButton}>
-          Ver balance
+          Balance
         </Link>
+
+
         <Link
           href={resultadoUrl}
           target="_blank"
           className={styles.actionButton}
         >
-          Ver resultado
+          Resultado
+        </Link>
+
+        <Link href={fichaUrl} target="_blank" className={styles.actionButton}>
+          Ficha
         </Link>
       </div>
     </article>

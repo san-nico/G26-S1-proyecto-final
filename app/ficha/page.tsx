@@ -1,205 +1,146 @@
+import Footer from "@/components/global/Footer";
+import Navbar from "@/components/global/Navbar";
 import React from "react";
+import { getPerfilInstitucion } from "./api";
+import styles from "./Page.module.css";
 
-interface PerfilResponse {
-  Perfiles: {
-    Perfil: {
-      codigoSWIFT: string;
-      nombre: string;
-      rut: string;
-      direccionPrincipal: string;
-      telefono: string;
-      direccionWeb: string;
-      contactoPublico: string;
-      direccionPublico: string;
-      telefonoPublico: string;
-      sucursales: number;
-      empleados: number;
-      fechaPublicacion: string;
-      cajeros: number;
-      oficinas: number;
-    };
-  }[];
+interface PageProps {
+  searchParams: Promise<{
+    codigo?: string;
+    year?: string;
+    month?: string;
+  }>;
 }
 
-export default async function Page() {
-  try {
-    const res = await fetch(
-      "https://api.cmfchile.cl/api-sbifv3/recursos_api/perfil/instituciones/012/2026/06?apikey=d3217c0d406feca58306af437eb4c783de05febb&formato=json",
-      {
-        cache: "no-store",
-        headers: {
-          "User-Agent": "Mozilla/5.0",
-        },
-      }
-    );
-
-    if (!res.ok) {
-      throw new Error(`Error en la API: ${res.status}`);
-    }
-
-    const data: PerfilResponse = await res.json();
-    const perfil = data?.Perfiles?.[0]?.Perfil;
-
-    if (!perfil) {
-      throw new Error("No se encontró el perfil en la respuesta.");
-    }
-
-    const fechaFormateada = perfil.fechaPublicacion
-      ? new Date(perfil.fechaPublicacion).toLocaleDateString("es-CL", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-      : "No disponible";
-
-    return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-blue-50 py-12 px-4 sm:px-6">
-        <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl bg-white shadow-xl border border-slate-100">
-          {/* Header con acento de color */}
-          <div className="bg-gradient-to-r from-blue-700 to-indigo-800 p-8 text-white relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-            <span className="inline-block px-3 py-1 rounded-full bg-blue-600/60 text-xs font-semibold tracking-wider uppercase mb-3 border border-blue-400/30">
-              Institución Financiera
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              {perfil.nombre}
-            </h1>
-            <p className="mt-2 text-blue-100 font-medium text-sm sm:text-base">
-              RUT:{" "}
-              <span className="font-mono bg-blue-900/40 px-2 py-0.5 rounded">
-                {perfil.rut}
-              </span>
-            </p>
-          </div>
-
-          <div className="p-8 space-y-8">
-            {/* Sección: Información Principal */}
-            <div>
-              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-                Información Institucional
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Info titulo="Código SWIFT" valor={perfil.codigoSWIFT} />
-                <Info titulo="Sitio Web" valor={perfil.direccionWeb} isLink />
-                <Info titulo="Teléfono Principal" valor={perfil.telefono} />
-                <Info
-                  titulo="Dirección Principal"
-                  valor={perfil.direccionPrincipal?.trim()}
-                />
-              </div>
-            </div>
-
-            <hr className="border-slate-100" />
-
-            {/* Sección: Contacto Público */}
-            <div>
-              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-                Canales de Atención al Público
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Info
-                  titulo="Contacto Público"
-                  valor={perfil.contactoPublico}
-                />
-                <Info
-                  titulo="Teléfono Público"
-                  valor={perfil.telefonoPublico}
-                />
-                <Info
-                  titulo="Dirección Pública"
-                  valor={perfil.direccionPublico}
-                  className="sm:col-span-2"
-                />
-              </div>
-            </div>
-
-            <hr className="border-slate-100" />
-
-            {/* Sección: Red e Indicadores */}
-            <div>
-              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-                Presencia Operativa y Personal
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <StatCard label="Sucursales" value={perfil.sucursales} />
-                <StatCard label="Oficinas" value={perfil.oficinas} />
-                <StatCard label="Cajeros" value={perfil.cajeros} />
-                <StatCard label="Empleados" value={perfil.empleados} />
-              </div>
-            </div>
-          </div>
-
-          {/* Footer de la tarjeta */}
-          <div className="bg-slate-50 px-8 py-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-            <span>Fuente: Comisión para el Mercado Financiero (CMF)</span>
-            <span>Actualizado al: {fechaFormateada}</span>
-          </div>
-        </div>
-      </main>
-    );
-  } catch (error) {
-    return (
-      <main className="min-h-screen bg-slate-50 p-8 flex items-center justify-center">
-        <div className="mx-auto max-w-md rounded-2xl bg-white p-8 shadow-xl border border-red-100 text-center">
-          <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-xl">
-            !
-          </div>
-          <h1 className="text-xl font-bold text-slate-800">
-            Error al cargar la página
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            No se pudo obtener la información de la CMF en este momento.
-            Inténtalo de nuevo más tarde.
-          </p>
-        </div>
-      </main>
-    );
-  }
-}
-
-function Info({
-  titulo,
-  valor,
-  isLink = false,
-  className = "",
-}: {
-  titulo: string;
-  valor: React.ReactNode;
+interface InfoRowProps {
+  label: string;
+  value?: string | null;
   isLink?: boolean;
-  className?: string;
-}) {
-  const contenido = valor ?? "No informado";
+}
+
+interface StatItemProps {
+  label: string;
+  value?: number | null;
+}
+
+export default async function Page(props: PageProps) {
+  const searchParams = await props.searchParams;
+  const { codigo, year, month } = searchParams;
+
+  const perfil = await getPerfilInstitucion({ codigo, year, month });
 
   return (
-    <div
-      className={`rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition hover:bg-slate-50/80 ${className}`}
-    >
-      <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
-        {titulo}
-      </p>
-      <div className="mt-1 text-slate-800 font-medium break-words">
-        {isLink && typeof valor === "string" ? (
-          <a
-            href={valor.startsWith("http") ? valor : `https://${valor}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline inline-flex items-center gap-1"
-          >
-            {valor}
-          </a>
-        ) : (
-          contenido
-        )}
+    <div className={styles.container}>
+      {/* Navbar con tamaño fijo */}
+      <div className={styles.fixedArea}>
+        <Navbar />
+      </div>
+
+      {/* Contenido principal flexible */}
+      <main className={styles.mainContent}>
+        <div className={styles.wrapper}>
+          {/* Header Directo y Compacto */}
+          <div className={styles.header}>
+            <div>
+              <div className={styles.headerMeta}>
+                <span className={styles.badge}>
+                  Institución Financiera
+                </span>
+                <span className={styles.updatedText}>
+                  Actualizado: {perfil.fechaFormateada}
+                </span>
+              </div>
+              <h1 className={styles.title}>{perfil.nombre}</h1>
+            </div>
+
+            <div className={styles.rutContainer}>
+              <span>RUT:</span>
+              <span className={styles.rutValue}>{perfil.rut}</span>
+            </div>
+          </div>
+
+          {/* Fila de Métricas Clave */}
+          <div className={styles.statsGrid}>
+            <StatItem label="Sucursales" value={perfil.sucursales} />
+            <StatItem label="Oficinas" value={perfil.oficinas} />
+            <StatItem label="Cajeros" value={perfil.cajeros} />
+            <StatItem label="Empleados" value={perfil.empleados} />
+          </div>
+
+          {/* Grid de Información Principal y Contacto */}
+          <div className={styles.contentGrid}>
+            {/* Sección 1: Información Institucional */}
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>
+                Información Institucional
+              </h2>
+              <dl className={styles.infoList}>
+                <InfoRow label="Código SWIFT" value={perfil.codigoSWIFT} />
+                <InfoRow label="Sitio Web" value={perfil.direccionWeb} isLink />
+                <InfoRow label="Teléfono" value={perfil.telefono} />
+                <InfoRow label="Dirección Central" value={perfil.direccionPrincipal} />
+              </dl>
+            </section>
+
+            {/* Sección 2: Canales de Atención */}
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>
+                Atención al Público
+              </h2>
+              <dl className={styles.infoList}>
+                <InfoRow label="Contacto Público" value={perfil.contactoPublico} />
+                <InfoRow label="Teléfono Público" value={perfil.telefonoPublico} />
+                <InfoRow label="Dirección Pública" value={perfil.direccionPublico} />
+              </dl>
+            </section>
+          </div>
+
+          {/* Fuente de datos */}
+          <div className={styles.sourceFooter}>
+            <span>Fuente: Comisión para el Mercado Financiero (CMF)</span>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer estático abajo */}
+      <div className={styles.fixedArea}>
+        <Footer />
       </div>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
+// Componente ultra compacto para mostrar Clave - Valor
+function InfoRow({ label, value, isLink = false }: InfoRowProps) {
+  const displayValue = value || "No informado";
+
   return (
-    <div className="rounded-xl border border-slate-100 bg-blue-50/30 p-4 text-center">
-      <p className="text-2xl font-bold text-blue-700">{value ?? 0}</p>
-      <p className="text-xs font-medium text-slate-500 mt-1">{label}</p>
+    <div className={styles.infoRow}>
+      <dt className={styles.infoLabel}>{label}</dt>
+      <dd className={styles.infoValue}>
+        {isLink && value ? (
+          <a
+            href={value.startsWith("http") ? value : `https://${value}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.link}
+          >
+            {value}
+          </a>
+        ) : (
+          displayValue
+        )}
+      </dd>
+    </div>
+  );
+}
+
+// Tarjeta de estadística compacta horizontal/vertical
+function StatItem({ label, value }: StatItemProps) {
+  return (
+    <div className={styles.statCard}>
+      <span className={styles.statLabel}>{label}</span>
+      <span className={styles.statValue}>{value ?? 0}</span>
     </div>
   );
 }
