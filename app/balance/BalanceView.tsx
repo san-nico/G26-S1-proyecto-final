@@ -1,7 +1,7 @@
 import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 import styles from "./BalanceView.module.css";
-import Image from "next/image";
+
 
 type Card = {
   category: string;
