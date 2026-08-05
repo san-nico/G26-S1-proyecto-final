@@ -2,6 +2,7 @@ import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 import React from "react";
 import { getPerfilInstitucion } from "./api";
+import styles from "./Page.module.css";
 
 interface PageProps {
   searchParams: Promise<{
@@ -18,42 +19,42 @@ export default async function Page({ searchParams }: PageProps) {
     const perfil = await getPerfilInstitucion({ codigo, year, month });
 
     return (
-      <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+      <div className={styles.container}>
         {/* Navbar con tamaño fijo */}
-        <div className="shrink-0">
+        <div className={styles.fixedArea}>
           <Navbar />
         </div>
 
         {/* Contenido principal flexible */}
-        <main className="flex-1 py-4 px-4 sm:px-8 flex flex-col justify-between overflow-y-auto sm:overflow-hidden">
-          <div className="mx-auto max-w-5xl w-full space-y-4 my-auto">
+        <main className={styles.mainContent}>
+          <div className={styles.wrapper}>
             
             {/* Header Directo y Compacto */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-200 pb-3">
+            <div className={styles.header}>
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold uppercase tracking-wider">
+                <div className={styles.headerMeta}>
+                  <span className={styles.badge}>
                     Institución Financiera
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className={styles.updatedText}>
                     Actualizado: {perfil.fechaFormateada}
                   </span>
                 </div>
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+                <h1 className={styles.title}>
                   {perfil.nombre}
                 </h1>
               </div>
 
-              <div className="flex items-center gap-2 text-base text-slate-600">
+              <div className={styles.rutContainer}>
                 <span>RUT:</span>
-                <span className="font-mono font-medium bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-800 text-sm">
+                <span className={styles.rutValue}>
                   {perfil.rut}
                 </span>
               </div>
             </div>
 
             {/* Fila de Métricas Clave */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className={styles.statsGrid}>
               <StatItem label="Sucursales" value={perfil.sucursales} />
               <StatItem label="Oficinas" value={perfil.oficinas} />
               <StatItem label="Cajeros" value={perfil.cajeros} />
@@ -61,14 +62,14 @@ export default async function Page({ searchParams }: PageProps) {
             </div>
 
             {/* Grid de Información Principal y Contacto */}
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className={styles.contentGrid}>
               
               {/* Sección 1: Información Institucional */}
-              <section className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm space-y-2">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1.5">
+              <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>
                   Información Institucional
                 </h2>
-                <dl className="grid grid-cols-1 gap-1.5 text-xs sm:text-sm">
+                <dl className={styles.infoList}>
                   <InfoRow label="Código SWIFT" value={perfil.codigoSWIFT} />
                   <InfoRow label="Sitio Web" value={perfil.direccionWeb} isLink />
                   <InfoRow label="Teléfono" value={perfil.telefono} />
@@ -77,11 +78,11 @@ export default async function Page({ searchParams }: PageProps) {
               </section>
 
               {/* Sección 2: Canales de Atención */}
-              <section className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm space-y-2">
-                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1.5">
+              <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>
                   Atención al Público
                 </h2>
-                <dl className="grid grid-cols-1 gap-1.5 text-xs sm:text-sm">
+                <dl className={styles.infoList}>
                   <InfoRow label="Contacto Público" value={perfil.contactoPublico} />
                   <InfoRow label="Teléfono Público" value={perfil.telefonoPublico} />
                   <InfoRow label="Dirección Pública" value={perfil.direccionPublico} />
@@ -91,7 +92,7 @@ export default async function Page({ searchParams }: PageProps) {
             </div>
 
             {/* Fuente de datos */}
-            <div className="text-[11px] text-slate-400 flex items-center justify-between pt-1">
+            <div className={styles.sourceFooter}>
               <span>Fuente: Comisión para el Mercado Financiero (CMF)</span>
             </div>
 
@@ -99,26 +100,26 @@ export default async function Page({ searchParams }: PageProps) {
         </main>
 
         {/* Footer estático abajo */}
-        <div className="shrink-0">
+        <div className={styles.fixedArea}>
           <Footer />
         </div>
       </div>
     );
   } catch (error) {
     return (
-      <div className="h-screen flex flex-col bg-slate-50 justify-between">
+      <div className={styles.container}>
         <Navbar />
-        <main className="flex-1 p-8 flex items-center justify-center">
-          <div className="mx-auto max-w-sm rounded-xl bg-white p-6 shadow-md border border-red-200 text-center space-y-3">
-            <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto font-bold text-lg">
+        <main className={styles.errorMain}>
+          <div className={styles.errorCard}>
+            <div className={styles.errorIcon}>
               !
             </div>
-            <h1 className="text-base font-bold text-slate-800">
+            <h1 className={styles.errorTitle}>
               Error al cargar la página
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className={styles.errorText}>
               No se pudo obtener la información para la institución{" "}
-              <span className="font-semibold">{codigo}</span> ({month || "06"}/{year || "2026"}).
+              <span className={styles.highlightText}>{codigo}</span> ({month || "06"}/{year || "2026"}).
             </p>
           </div>
         </main>
@@ -141,15 +142,15 @@ function InfoRow({
   const contenido = value || "No informado";
 
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-0.5 sm:gap-4 py-0.5 border-b border-slate-50 last:border-0">
-      <dt className="text-slate-500 text-xs sm:w-1/3 shrink-0">{label}</dt>
-      <dd className="text-slate-800 font-medium break-words text-right sm:text-right w-full">
+    <div className={styles.infoRow}>
+      <dt className={styles.infoLabel}>{label}</dt>
+      <dd className={styles.infoValue}>
         {isLink && typeof value === "string" ? (
           <a
             href={value.startsWith("http") ? value : `https://${value}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline inline-flex items-center gap-1"
+            className={styles.link}
           >
             {value}
           </a>
@@ -164,9 +165,9 @@ function InfoRow({
 // Tarjeta de estadística compacta horizontal/vertical
 function StatItem({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 flex items-center justify-between sm:flex-col sm:items-start shadow-sm">
-      <span className="text-xs text-slate-500 font-medium">{label}</span>
-      <span className="text-lg sm:text-xl font-bold text-slate-900">{value ?? 0}</span>
+    <div className={styles.statCard}>
+      <span className={styles.statLabel}>{label}</span>
+      <span className={styles.statValue}>{value ?? 0}</span>
     </div>
   );
 }
