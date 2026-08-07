@@ -43,9 +43,7 @@ export default async function Page(props: PageProps) {
           <div className={styles.header}>
             <div>
               <div className={styles.headerMeta}>
-                <span className={styles.badge}>
-                  Institución Financiera
-                </span>
+                <span className={styles.badge}>Institución Financiera</span>
                 <span className={styles.updatedText}>
                   Actualizado: {perfil.fechaFormateada}
                 </span>
@@ -71,26 +69,34 @@ export default async function Page(props: PageProps) {
           <div className={styles.contentGrid}>
             {/* Sección 1: Información Institucional */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                Información Institucional
-              </h2>
+              <h2 className={styles.sectionTitle}>Información Institucional</h2>
               <dl className={styles.infoList}>
                 <InfoRow label="Código SWIFT" value={perfil.codigoSWIFT} />
                 <InfoRow label="Sitio Web" value={perfil.direccionWeb} isLink />
                 <InfoRow label="Teléfono" value={perfil.telefono} />
-                <InfoRow label="Dirección Central" value={perfil.direccionPrincipal} />
+                <InfoRow
+                  label="Dirección Central"
+                  value={perfil.direccionPrincipal}
+                />
               </dl>
             </section>
 
             {/* Sección 2: Canales de Atención */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                Atención al Público
-              </h2>
+              <h2 className={styles.sectionTitle}>Atención al Público</h2>
               <dl className={styles.infoList}>
-                <InfoRow label="Contacto Público" value={perfil.contactoPublico} />
-                <InfoRow label="Teléfono Público" value={perfil.telefonoPublico} />
-                <InfoRow label="Dirección Pública" value={perfil.direccionPublico} />
+                <InfoRow
+                  label="Contacto Público"
+                  value={perfil.contactoPublico}
+                />
+                <InfoRow
+                  label="Teléfono Público"
+                  value={perfil.telefonoPublico}
+                />
+                <InfoRow
+                  label="Dirección Pública"
+                  value={perfil.direccionPublico}
+                />
               </dl>
             </section>
           </div>
