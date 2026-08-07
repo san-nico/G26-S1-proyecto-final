@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Footer from "@/components/global/Footer";
 import BankList from "./BankList";
+import Navbar from "@/components/global/Navbar";
 
 export const metadata: Metadata = {
   title: "Instituciones bancarias | CMF Chile",
@@ -89,8 +90,7 @@ export default async function BanksPage({
 
   return (
     <div className="flex min-h-dvh flex-col bg-page">
-
-
+      <Navbar />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 sm:py-14">
         <BankList
           banks={banks}
