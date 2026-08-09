@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import BancosView from "@/components/bancos/BancosView";
 import PageLayout from "@/components/global/PageLayout";
-import { getBanks, type Bank } from "@/lib/cmf";
+import { getBanks } from "@/lib/cmf";
+import type { Bank } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Instituciones bancarias | CMF Chile",

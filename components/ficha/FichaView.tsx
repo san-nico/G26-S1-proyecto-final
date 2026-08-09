@@ -1,5 +1,5 @@
 import PageLayout from "@/components/global/PageLayout";
-import type { PerfilInstitucion } from "@/lib/cmf";
+import type { PerfilInstitucion } from "@/lib/types";
 
 interface InfoRowProps {
   label: string;
@@ -43,6 +43,11 @@ export default function FichaView({
             <span className="rounded-sm border border-line bg-panel px-2 py-0.5 font-mono text-sm font-medium text-ink">
               {perfil.rut}
             </span>
+            {perfil.codigoInstitucion && (
+              <span className="rounded-sm border border-line bg-panel px-2 py-0.5 font-mono text-sm font-medium text-ink">
+                {perfil.codigoInstitucion}
+              </span>
+            )}
           </div>
         </div>
 
@@ -53,7 +58,7 @@ export default function FichaView({
           <StatItem label="Empleados" value={perfil.empleados} />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           <section className="flex flex-col gap-2 rounded-xl border border-line-soft bg-panel p-4 shadow-card">
             <h2 className="border-b border-surface-2 pb-1.5 text-xs font-bold uppercase tracking-wider text-muted">
               Información Institucional
@@ -85,6 +90,30 @@ export default function FichaView({
               <InfoRow
                 label="Dirección Pública"
                 value={perfil.direccionPublico}
+              />
+            </dl>
+          </section>
+
+          <section className="flex flex-col gap-2 rounded-xl border border-line-soft bg-panel p-4 shadow-card">
+            <h2 className="border-b border-surface-2 pb-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+              Dotación de Personal
+            </h2>
+            <dl className="grid grid-cols-1 gap-1.5 text-xs sm:text-sm">
+              <InfoRow
+                label="Hombres permanentes"
+                value={perfil.empHombresPerm.toString()}
+              />
+              <InfoRow
+                label="Mujeres permanentes"
+                value={perfil.empMujeresPerm.toString()}
+              />
+              <InfoRow
+                label="Hombres externos"
+                value={perfil.empHombresExt.toString()}
+              />
+              <InfoRow
+                label="Mujeres externas"
+                value={perfil.empMujeresExt.toString()}
               />
             </dl>
           </section>

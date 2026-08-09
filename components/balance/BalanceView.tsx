@@ -1,4 +1,5 @@
 import PageLayout from "@/components/global/PageLayout";
+import SummaryCard from "@/components/global/SummaryCard";
 
 type Card = {
   category: string;
@@ -26,7 +27,7 @@ export default function BalanceView({
     <PageLayout mainClassName="container-main">
       <section className="max-w-2xl">
         <p className="badge">Datos oficiales CMF Chile</p>
-        <h1 className="page-title">Resumen de Balance</h1>
+        <h1 className="page-title">Resumen de Estado de Situación Financiera</h1>
       </section>
 
       {error ? (
@@ -47,12 +48,13 @@ export default function BalanceView({
             aria-label="Tarjetas de resumen financiero"
           >
             {cards.map((card, i) => (
-              <article key={i} className={`card overflow-hidden ${card.style}`}>
-                <p className="card-category">{card.category}</p>
-                <h3 className="card-title">{card.title}</h3>
-                <p className="card-amount">{card.amount}</p>
-                <p className="card-meta">CLP · Subtotal oficial CMF</p>
-              </article>
+              <SummaryCard
+                key={i}
+                category={card.category}
+                title={card.title}
+                amount={card.amount}
+                cardClass={card.style}
+              />
             ))}
           </section>
         </div>

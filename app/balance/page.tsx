@@ -1,31 +1,12 @@
 import type { Metadata } from "next";
 import BalanceView from "@/components/balance/BalanceView";
-import { formatValue, getBalanceAccounts } from "@/lib/cmf";
+import { getBalanceAccounts } from "@/lib/cmf";
+import { TARGET_ACCOUNTS } from "@/lib/types";
+import { formatValue } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Resumen de Balance | CMF Chile",
+  title: "Resumen de Estado de Situación Financiera | CMF Chile",
 };
-
-const TARGET_ACCOUNTS = [
-  {
-    code: "100000000",
-    category: "Activo",
-    title: "Activo Total",
-    style: "border-income-200 bg-income-50/60 text-income-700",
-  },
-  {
-    code: "200000000",
-    category: "Pasivo",
-    title: "Pasivo Total",
-    style: "border-alert-border bg-[#fef3c7]/60 text-[#b45309]",
-  },
-  {
-    code: "300000000",
-    category: "Patrimonio",
-    title: "Patrimonio Total",
-    style: "border-result-200 bg-result-50/60 text-result-700",
-  },
-];
 
 export default async function BalancePage({
   searchParams,
@@ -57,7 +38,7 @@ export default async function BalancePage({
       style: item.style,
     }));
   } catch {
-    error = "No se pudieron consultar los datos del balance en la CMF.";
+    error = "No se pudieron consultar los datos del estado de situación financiera en la CMF.";
   }
 
   return (
