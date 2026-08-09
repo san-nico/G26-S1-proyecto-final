@@ -19,10 +19,8 @@ export default function SummaryCard({
 
   return (
     <article className={`card overflow-hidden ${cardClass}`}>
-      <p className={`card-category ${textClass}`}>{category}</p>
       <Heading className="card-title">{title}</Heading>
-      <p className={`card-amount ${textClass}`}>{amount}</p>
-      <p className="card-meta">CLP · Subtotal oficial CMF</p>
+      <p className="card-amount text-lg">CLP ${amount}</p>
     </article>
   );
 }

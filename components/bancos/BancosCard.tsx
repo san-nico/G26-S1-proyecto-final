@@ -18,15 +18,19 @@ export default function BancosCard({
   const resumenUrl = `/resumen?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
 
   return (
-    <Link href={resumenUrl} target="_blank" className="group block no-underline">
+    <Link
+      href={resumenUrl}
+      target="_blank"
+      className="group block no-underline"
+    >
       <article className="card flex items-center gap-4 rounded-xl transition-colors duration-200 group-hover:bg-surface-2">
-        <span className="grid size-14 shrink-0 place-items-center rounded-xl border border-line bg-panel p-2">
+        <span className="grid size-14 shrink-0 overflow-hidden place-items-center rounded-xl border border-line bg-panel">
           <Image
             width={100}
             height={100}
             src={`/bank-logos/${bank.CodigoInstitucion}.png`}
             alt={`Logo de ${bank.NombreInstitucion}`}
-            className="size-10 object-contain"
+            className="object-contain"
           />
         </span>
         <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
