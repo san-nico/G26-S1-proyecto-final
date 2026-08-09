@@ -1,6 +1,5 @@
 import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
-import styles from "./PageLayout.module.scss";
 
 type PageLayoutProps = {
   children: React.ReactNode;
@@ -10,16 +9,16 @@ type PageLayoutProps = {
 
 export default function PageLayout({
   children,
-  className = styles.layout,
-  mainClassName = styles.main,
+  className = "page-shell",
+  mainClassName = "container-main",
 }: PageLayoutProps) {
   return (
     <div className={className}>
-      <div className={styles.shell}>
+      <div className="shrink-0">
         <Navbar />
       </div>
       <main className={mainClassName}>{children}</main>
-      <div className={styles.shell}>
+      <div className="shrink-0">
         <Footer />
       </div>
     </div>

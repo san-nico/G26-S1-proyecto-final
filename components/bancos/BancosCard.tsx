@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import styles from "./BancosCard.module.scss";
 
 type BancosCardProps = {
   bank: {
@@ -21,39 +20,37 @@ export default function BancosCard({
   const fichaUrl = `/ficha?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
 
   return (
-    <article className={styles.card}>
-      <div className={styles.cardHeader}>
-        <span className={styles.logoContainer}>
+    <article className="card flex flex-col gap-4 rounded-xl">
+      <div className="flex items-center gap-4">
+        <span className="grid size-14 place-items-center rounded-xl border border-line bg-panel p-2">
           <Image
             width={100}
             height={100}
             src={`/bank-logos/${bank.CodigoInstitucion}.png`}
             alt={`Logo de ${bank.NombreInstitucion}`}
-            className={styles.logo}
+            className="size-10 object-contain"
           />
         </span>
-        <div className={styles.cardInfo}>
-          <div className={styles.cardTitleWrapper}>
-            <h3 className={styles.bankName}>{bank.NombreInstitucion}</h3>
-            <div className={styles.bankCode}>{bank.CodigoInstitucion}</div>
+        <div className="flex-1">
+          <div className="grid items-center justify-between gap-2">
+            <h3 className="truncate font-bold text-ink">
+              {bank.NombreInstitucion}
+            </h3>
+            <div className="w-16 rounded-full bg-surface-1 px-2.5 py-0.5 text-center font-mono text-xs text-muted">
+              {bank.CodigoInstitucion}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className={styles.cardActions}>
-        <Link href={balanceUrl} target="_blank" className={styles.actionButton}>
+      <div className="flex items-center gap-2 border-t border-line pt-3 text-xs font-medium">
+        <Link href={balanceUrl} target="_blank" className="action-button">
           Balance
         </Link>
-
-        <Link
-          href={resultadoUrl}
-          target="_blank"
-          className={styles.actionButton}
-        >
+        <Link href={resultadoUrl} target="_blank" className="action-button">
           Resultado
         </Link>
-
-        <Link href={fichaUrl} target="_blank" className={styles.actionButton}>
+        <Link href={fichaUrl} target="_blank" className="action-button">
           Ficha
         </Link>
       </div>

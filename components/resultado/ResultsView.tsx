@@ -1,5 +1,4 @@
 import PageLayout from "@/components/global/PageLayout";
-import styles from "./ResultsView.module.scss";
 
 type Card = {
   category: string;
@@ -25,39 +24,40 @@ export default function ResultsView({
   error?: string;
 }) {
   return (
-    <PageLayout mainClassName={styles.main}>
-      <section className={styles.hero}>
-        <p className={styles.badge}>Datos oficiales CMF Chile</p>
-        <h1 className={styles.title}>Resumen de Resultados</h1>
+    <PageLayout mainClassName="container-main">
+      <section className="max-w-2xl">
+        <p className="badge">Datos oficiales CMF Chile</p>
+        <h1 className="page-title">Resumen de Resultados</h1>
       </section>
 
       {error ? (
-        <div role="alert" className={styles.alert}>
-          <p className={styles.alertText}>{error}</p>
+        <div role="alert" className="alert">
+          <p className="font-bold">{error}</p>
         </div>
       ) : (
-        <div className={styles.content}>
-          <header className={styles.bankHeader}>
-            <h2 className={styles.bankTitle}>{bankName}</h2>
-            <p className={styles.bankMeta}>
+        <div className="mt-10 [&>*+*]:mt-8">
+          <header className="card p-5 sm:p-6">
+            <h2 className="mt-1 text-2xl font-bold text-ink">{bankName}</h2>
+            <p className="meta mt-2">
               Código: {code} · Período: {month}/{year}
             </p>
           </header>
 
           <section
-            className={styles.grid}
+            className="grid gap-4 md:grid-cols-3"
             aria-label="Tarjetas de resumen financiero"
           >
             {cards.map((card, i) => (
-              <article key={i} className={`${styles.card} ${card.cardClass}`}>
-                <p className={`${styles.cardCategory} ${card.textClass}`}>
+              <article
+                key={i}
+                className={`card overflow-hidden ${card.cardClass}`}
+              >
+                <p className={`card-category ${card.textClass}`}>
                   {card.category}
                 </p>
-                <h3 className={styles.cardTitle}>{card.title}</h3>
-                <p className={`${styles.cardAmount} ${card.textClass}`}>
-                  {card.amount}
-                </p>
-                <p className={styles.cardMeta}>CLP · Subtotal oficial CMF</p>
+                <h3 className="card-title">{card.title}</h3>
+                <p className={`card-amount ${card.textClass}`}>{card.amount}</p>
+                <p className="card-meta">CLP · Subtotal oficial CMF</p>
               </article>
             ))}
           </section>

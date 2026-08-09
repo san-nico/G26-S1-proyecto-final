@@ -1,11 +1,10 @@
 import Link from "next/link";
-import styles from "./Navbar.module.scss";
 
 export default function Navbar() {
   return (
-    <header className={styles.header}>
-      <nav className={styles.nav}>
-        <Link href="/" className={styles.brand}>
+    <header className="border-b border-line bg-panel">
+      <nav className="container flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <Link href="/" className="text-lg font-bold text-brand-800">
           CMF Bancos
         </Link>
       </nav>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import BalanceView from "@/components/balance/BalanceView";
 import { formatValue, getBalanceAccounts } from "@/lib/cmf";
-import styles from "@/components/balance/BalanceView.module.scss";
 
 export const metadata: Metadata = {
   title: "Resumen de Balance | CMF Chile",
@@ -12,19 +11,19 @@ const TARGET_ACCOUNTS = [
     code: "100000000",
     category: "Activo",
     title: "Activo Total",
-    style: styles.cardActivo,
+    style: "border-income-200 bg-income-50/60 text-income-700",
   },
   {
     code: "200000000",
     category: "Pasivo",
     title: "Pasivo Total",
-    style: styles.cardPasivo,
+    style: "border-alert-border bg-[#fef3c7]/60 text-[#b45309]",
   },
   {
     code: "300000000",
     category: "Patrimonio",
     title: "Patrimonio Total",
-    style: styles.cardPatrimonio,
+    style: "border-result-200 bg-result-50/60 text-result-700",
   },
 ];
 

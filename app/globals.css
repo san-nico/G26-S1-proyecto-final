@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Tokens de diseño (Tema global)
+   ------------------------------------------------------------
+   Única fuente de verdad para colores, tipografías y sombras.
+   Cada token genera utilidades: --color-* -> bg-/text-/border-*,
+   --font-* -> font-*, --shadow-* -> shadow-*.
+   ============================================================ */
+
+@theme {
+  /* Colores de marca */
+  --color-brand-50: #effcf9;
+  --color-brand-100: #d7f7ef;
+  --color-brand-700: #196e63;
+  --color-brand-800: #19584f;
+
+  /* Colores de interfaz */
+  --color-page: #f6f8fa; /* fondo de página */
+  --color-panel: #ffffff; /* superficie / tarjetas */
+  --color-ink: #172033; /* texto principal */
+  --color-muted: #64748b; /* texto secundario */
+  --color-line: #dce3ea; /* bordes */
+  --color-line-soft: rgb(226 232 240 / 0.8); /* bordes suaves */
+  --color-surface-1: #f1f5f9; /* fondo sutil (códigos, chips) */
+  --color-surface-2: #f8fafc; /* hover sutil */
+
+  /* Colores semánticos */
+  --color-income-50: #ecfdf5;
+  --color-income-200: #a7f3d0;
+  --color-income-700: #047857;
+
+  --color-expense-50: #fff1f2;
+  --color-expense-200: #fecdd3;
+  --color-expense-700: #be123c;
+
+  --color-result-50: #eff6ff;
+  --color-result-100: #dbeafe;
+  --color-result-200: #bfdbfe;
+  --color-result-700: #1d4ed8;
+
+  /* Alertas y errores */
+  --color-alert-border: #fde68a;
+  --color-alert-bg: #fffbeb;
+  --color-alert-ink: #78350f;
+
+  /* Sombras */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* Tipografías (variables inyectadas por next/font) */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ============================================================
+   Clases de componente reutilizables
+   ------------------------------------------------------------
+   Arquitectura: layout y componentes repetidos se definen una
+   sola vez aquí y se consumen con `className` en los componentes.
+   Al vivir en @layer components, cualquier utilidad aplicada
+   desde el marcado siempre las sobreescribe.
+   ============================================================ */
+
+@layer components {
+  /* Cáscara de página (wrapper global de PageLayout). */
+  .page-shell {
+    @apply flex min-h-dvh flex-col bg-page;
+  }
+
+  /* Contenedor centrado (navbar, footer y main comparten el ancho). */
+  .container {
+    @apply mx-auto w-full max-w-6xl;
+  }
+
+  /* Contenedor principal del contenido. */
+  .container-main {
+    @apply mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 sm:py-14;
+  }
+
+  /* Tarjeta base reutilizable. */
+  .card {
+    @apply rounded-2xl border border-line bg-panel p-5 shadow-card;
+  }
+
+  /* Insignia / etiqueta de sección. */
+  .badge {
+    @apply text-sm font-bold uppercase tracking-widest text-brand-700;
+  }
+
+  /* Caja de alerta / error. */
+  .alert {
+    @apply mt-8 rounded-xl border border-alert-border bg-alert-bg p-5 text-alert-ink;
+  }
+
+  /* Botón de acción (dentro de tarjetas). */
+  .action-button {
+    @apply flex-1 rounded-lg border border-line bg-panel py-2 text-center text-ink no-underline transition-colors duration-200 hover:bg-surface-2;
+  }
+
+  /* Título principal de página (hero). */
+  .page-title {
+    @apply mt-3 text-4xl font-bold tracking-tight text-ink sm:text-5xl;
+  }
+
+  /* Texto meta (pequeño, secundario). */
+  .meta {
+    @apply text-sm text-muted;
+  }
+
+  /* Texto numérico (monospace) para montos. */
+  .card-amount {
+    @apply mt-3 font-mono text-xl font-bold tracking-tight tabular-nums sm:text-2xl;
+  }
+
+  /* Piezas internas de las tarjetas de resumen. */
+  .card-category {
+    @apply text-sm font-bold truncate;
+  }
+
+  .card-title {
+    @apply mt-2 font-semibold text-ink truncate;
+  }
+
+  .card-meta {
+    @apply mt-1 text-xs font-medium text-muted truncate;
+  }
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  @apply m-0 flex min-h-full flex-col bg-page font-sans text-ink antialiased;
+}

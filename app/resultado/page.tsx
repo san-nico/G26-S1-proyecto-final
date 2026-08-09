@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import ResultsView from "@/components/resultado/ResultsView";
 import { formatValue, getResultAccounts } from "@/lib/cmf";
-import styles from "@/components/resultado/ResultsView.module.scss";
 
 export const metadata: Metadata = {
   title: "Resumen de Resultados | CMF Chile",
@@ -12,22 +11,22 @@ const SUMMARY_GROUPS = [
     code: "550000000",
     category: "Ingresos",
     title: "Ingresos operacionales",
-    cardClass: styles.cardIncome,
-    textClass: styles.textIncome,
+    cardClass: "border-income-200 bg-income-50",
+    textClass: "text-income-700",
   },
   {
     code: "560000000",
     category: "Gastos",
     title: "Gastos operacionales",
-    cardClass: styles.cardExpense,
-    textClass: styles.textExpense,
+    cardClass: "border-expense-200 bg-expense-50",
+    textClass: "text-expense-700",
   },
   {
     code: "590000000",
     category: "Resultado",
     title: "Resultado del período",
-    cardClass: styles.cardResult,
-    textClass: styles.textResult,
+    cardClass: "border-result-200 bg-result-50",
+    textClass: "text-result-700",
   },
 ] as const;
 
