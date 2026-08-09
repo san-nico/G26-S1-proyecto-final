@@ -1,34 +1,12 @@
 import type { Metadata } from "next";
 import ResultsView from "@/components/resultado/ResultsView";
-import { formatValue, getResultAccounts } from "@/lib/cmf";
+import { getResultAccounts } from "@/lib/cmf";
+import { SUMMARY_GROUPS } from "@/lib/types";
+import { formatValue } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Resumen de Resultados | CMF Chile",
+  title: "Resumen de Estado de Resultado | CMF Chile",
 };
-
-const SUMMARY_GROUPS = [
-  {
-    code: "550000000",
-    category: "Ingresos",
-    title: "Ingresos operacionales",
-    cardClass: "border-income-200 bg-income-50",
-    textClass: "text-income-700",
-  },
-  {
-    code: "560000000",
-    category: "Gastos",
-    title: "Gastos operacionales",
-    cardClass: "border-expense-200 bg-expense-50",
-    textClass: "text-expense-700",
-  },
-  {
-    code: "590000000",
-    category: "Resultado",
-    title: "Resultado del período",
-    cardClass: "border-result-200 bg-result-50",
-    textClass: "text-result-700",
-  },
-] as const;
 
 export default async function SummaryPage({
   searchParams,
