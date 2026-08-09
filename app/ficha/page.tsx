@@ -1,7 +1,7 @@
 import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 import React from "react";
-import { getPerfilInstitucion } from "./api";
+import { getPerfilInstitucion } from "@/lib/cmf";
 import styles from "./Page.module.css";
 
 interface PageProps {
