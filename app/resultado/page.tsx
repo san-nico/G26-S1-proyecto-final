@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import ResultsView from "./ResultsView";
+import ResultsView from "@/components/resultado/ResultsView";
 import { formatValue, getResultAccounts } from "@/lib/cmf";
-import styles from "./ResultsView.module.css";
+import styles from "@/components/resultado/ResultsView.module.scss";
 
 export const metadata: Metadata = {
   title: "Resumen de Resultados | CMF Chile",

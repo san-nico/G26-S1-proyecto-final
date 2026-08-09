@@ -1,0 +1,116 @@
+@use "../../app/styles/theme" as *;
+
+.mainContent {
+  @include main-container;
+}
+
+.heroSection {
+  max-width: 42rem;
+}
+
+.badge {
+  @include badge;
+}
+
+.title {
+  @include page-title;
+}
+
+.errorAlert {
+  @include alert;
+}
+
+.errorMessage {
+  font-weight: 700;
+}
+
+.summaryWrapper {
+  margin-top: space(10);
+
+  > * + * {
+    margin-top: space(8);
+  }
+}
+
+.bankHeader {
+  @include card($padding: space(5), $radius: $radius-lg);
+
+  @include media($bp-sm) {
+    padding: space(6);
+  }
+}
+
+.bankName {
+  margin-top: space(1);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.metaPeriod {
+  margin-top: space(2);
+  @include meta;
+}
+
+.grid {
+  display: grid;
+  gap: space(4);
+
+  @include media($bp-md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  overflow: hidden;
+  border-radius: $radius-lg;
+  border-width: 1px;
+  border-style: solid;
+  padding: space(5);
+  box-shadow: $shadow-card;
+}
+
+.cardActivo {
+  border-color: $income-200;
+  background-color: rgb(236 253 245 / 0.6);
+  color: $income-700;
+}
+
+.cardPasivo {
+  border-color: $alert-border;
+  background-color: rgb(254 243 199 / 0.6);
+  color: #b45309;
+}
+
+.cardPatrimonio {
+  border-color: $result-200;
+  background-color: rgb(240 249 255 / 0.6);
+  color: $result-700;
+}
+
+.cardCategory {
+  font-size: 0.875rem;
+  font-weight: 700;
+  @include truncate;
+}
+
+.cardTitle {
+  margin-top: space(2);
+  font-weight: 600;
+  color: $ink;
+  @include truncate;
+}
+
+.cardAmount {
+  @include amount-text;
+}
+
+.cardFooter {
+  margin-top: space(1);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: $muted;
+  @include truncate;
+}

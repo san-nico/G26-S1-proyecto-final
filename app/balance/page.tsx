@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import BalanceView from "./BalanceView";
+import BalanceView from "@/components/balance/BalanceView";
 import { formatValue, getBalanceAccounts } from "@/lib/cmf";
-import styles from "./BalanceView.module.css";
+import styles from "@/components/balance/BalanceView.module.scss";
 
 export const metadata: Metadata = {
   title: "Resumen de Balance | CMF Chile",

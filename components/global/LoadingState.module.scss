@@ -1,0 +1,48 @@
+@use "../../app/styles/theme" as *;
+
+.main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: space(12) space(4);
+}
+
+.card {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: $radius-lg;
+  border: 1px solid $line;
+  background-color: $panel;
+  padding: space(6);
+  text-align: center;
+  box-shadow: $shadow-card;
+}
+
+.spinner {
+  margin-inline: auto;
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: $radius-full;
+  border: 4px solid $brand-100;
+  border-top-color: $brand-700;
+  animation: spin 1s linear infinite;
+}
+
+.title {
+  margin-top: space(5);
+  font-weight: 700;
+  color: $ink;
+}
+
+.description {
+  margin-top: space(1);
+  font-size: 0.875rem;
+  color: $muted;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

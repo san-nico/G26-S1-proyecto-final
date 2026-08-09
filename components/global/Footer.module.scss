@@ -1,0 +1,18 @@
+@use "../../app/styles/theme" as *;
+
+.footer {
+  margin-top: auto;
+  border-top: 1px solid $line;
+  background-color: $panel;
+}
+
+.inner {
+  @include container;
+  padding: space(6) space(4);
+  text-align: center;
+  @include meta;
+
+  @include media($bp-sm) {
+    padding-inline: space(6);
+  }
+}

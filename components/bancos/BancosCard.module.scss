@@ -1,0 +1,67 @@
+@use "../../app/styles/theme" as *;
+
+.card {
+  @include flex(column, flex-start, stretch, space(4));
+  @include card($padding: space(5), $radius: $radius-md);
+}
+
+.cardHeader {
+  @include flex(row, flex-start, center, space(4));
+}
+
+.logoContainer {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border-radius: $radius-md;
+  border: 1px solid $line;
+  background-color: $panel;
+  padding: space(2);
+}
+
+.logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+}
+
+.cardInfo {
+  flex: 1;
+}
+
+.cardTitleWrapper {
+  display: grid;
+  align-items: center;
+  justify-content: space-between;
+  gap: space(2);
+}
+
+.bankName {
+  @include truncate;
+  font-weight: 700;
+  color: $ink;
+}
+
+.bankCode {
+  border-radius: $radius-full;
+  width: 4rem;
+  text-align: center;
+  background-color: $surface-1;
+  padding: 0.125rem 0.625rem;
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $muted;
+}
+
+.cardActions {
+  @include flex(row, flex-start, center, space(2));
+  border-top: 1px solid $line;
+  padding-top: space(3);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.actionButton {
+  @include action-button;
+}

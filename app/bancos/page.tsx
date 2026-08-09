@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Footer from "@/components/global/Footer";
-import BankList from "./BankList";
-import Navbar from "@/components/global/Navbar";
+import BancosView from "@/components/bancos/BancosView";
+import PageLayout from "@/components/global/PageLayout";
 import { getBanks, type Bank } from "@/lib/cmf";
 
 export const metadata: Metadata = {
@@ -44,19 +43,14 @@ export default async function BanksPage({
   const capitalizedPeriod = `${periodText.charAt(0).toUpperCase() + periodText.slice(1)} de ${selectedYear}`;
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
-      <Navbar />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 sm:py-14">
-        <BankList
-          banks={banks}
-          error={error}
-          capitalizedPeriod={capitalizedPeriod}
-          selectedYear={selectedYear}
-          selectedMonth={selectedMonth}
-        />
-      </main>
-
-      <Footer />
-    </div>
+    <PageLayout>
+      <BancosView
+        banks={banks}
+        error={error}
+        capitalizedPeriod={capitalizedPeriod}
+        selectedYear={selectedYear}
+        selectedMonth={selectedMonth}
+      />
+    </PageLayout>
   );
 }

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import styles from "./BankCard.module.css";
 import Image from "next/image";
+import styles from "./BancosCard.module.scss";
 
-type BankCardProps = {
+type BancosCardProps = {
   bank: {
     CodigoInstitucion: string;
     NombreInstitucion: string;
@@ -11,16 +11,15 @@ type BankCardProps = {
   selectedMonth: string;
 };
 
-export default function BankCard({
+export default function BancosCard({
   bank,
   selectedYear,
   selectedMonth,
-}: BankCardProps) {
+}: BancosCardProps) {
   const balanceUrl = `/balance?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
   const resultadoUrl = `/resultado?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
   const fichaUrl = `/ficha?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
 
-  
   return (
     <article className={styles.card}>
       <div className={styles.cardHeader}>
@@ -45,7 +44,6 @@ export default function BankCard({
         <Link href={balanceUrl} target="_blank" className={styles.actionButton}>
           Balance
         </Link>
-
 
         <Link
           href={resultadoUrl}

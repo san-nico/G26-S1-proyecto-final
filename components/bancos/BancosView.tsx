@@ -1,12 +1,12 @@
-import BankCard from "./BankCard";
-import styles from "./BankList.module.css";
+import BancosCard from "./BancosCard";
+import styles from "./BancosView.module.scss";
 
 type Bank = {
   CodigoInstitucion: string;
   NombreInstitucion: string;
 };
 
-type BankListProps = {
+type BancosViewProps = {
   banks: Bank[];
   error: string;
   capitalizedPeriod: string;
@@ -14,13 +14,13 @@ type BankListProps = {
   selectedMonth: string;
 };
 
-export default function BankList({
+export default function BancosView({
   banks,
   error,
   capitalizedPeriod,
   selectedYear,
   selectedMonth,
-}: BankListProps) {
+}: BancosViewProps) {
   return (
     <>
       <section className={styles.container}>
@@ -59,7 +59,7 @@ export default function BankList({
           ) : (
             <div className={styles.grid}>
               {banks.map((bank) => (
-                <BankCard
+                <BancosCard
                   key={bank.CodigoInstitucion}
                   bank={bank}
                   selectedYear={selectedYear}

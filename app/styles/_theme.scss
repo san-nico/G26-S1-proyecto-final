@@ -1,0 +1,230 @@
+// ============================================================
+// Tema global del proyecto
+// ------------------------------------------------------------
+// Única fuente de verdad para colores, tipografía, espaciado,
+// radios, sombras y utilidades reutilizables (mixins).
+// Se importa en cada módulo con:
+//   @use "../../app/styles/theme" as *;
+// ============================================================
+
+// ------------------------------------------------------------
+// Colores de marca
+// ------------------------------------------------------------
+$brand-50: #effcf9;
+$brand-100: #d7f7ef;
+$brand-700: #196e63;
+$brand-800: #19584f;
+
+// ------------------------------------------------------------
+// Colores de interfaz
+// ------------------------------------------------------------
+$page: #f6f8fa; // fondo de página
+$panel: #ffffff; // superficie / tarjetas
+$ink: #172033; // texto principal
+$muted: #64748b; // texto secundario
+$line: #dce3ea; // bordes
+$line-soft: rgb(226 232 240 / 0.8); // bordes suaves
+$surface-1: #f1f5f9; // fondo sutil (códigos, chips)
+$surface-2: #f8fafc; // hover sutil
+
+// ------------------------------------------------------------
+// Colores semánticos
+// ------------------------------------------------------------
+$income-50: #ecfdf5;
+$income-200: #a7f3d0;
+$income-700: #047857;
+
+$expense-50: #fff1f2;
+$expense-200: #fecdd3;
+$expense-700: #be123c;
+
+$result-50: #eff6ff;
+$result-100: #dbeafe;
+$result-200: #bfdbfe;
+$result-700: #1d4ed8;
+
+// Alertas y errores
+$alert-border: #fde68a;
+$alert-bg: #fffbeb;
+$alert-ink: #78350f;
+
+// ------------------------------------------------------------
+// Tipografía
+// ------------------------------------------------------------
+$font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+$font-mono:
+  var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+  "Liberation Mono", monospace;
+
+// ------------------------------------------------------------
+// Radios y sombras
+// ------------------------------------------------------------
+$radius-sm: 0.5rem;
+$radius-md: 0.75rem;
+$radius-lg: 1rem;
+$radius-full: 9999px;
+
+$shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+// ------------------------------------------------------------
+// Breakpoints
+// ------------------------------------------------------------
+$bp-sm: 640px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+
+// ------------------------------------------------------------
+// Funciones
+// ------------------------------------------------------------
+
+// Escala de espaciado (equivalente a la escala de Tailwind).
+@function space($n) {
+  @return $n * 0.25rem;
+}
+
+// ------------------------------------------------------------
+// Mixins utilitarios
+// ------------------------------------------------------------
+
+// Media query responsive (min-width).
+@mixin media($bp) {
+  @media (min-width: $bp) {
+    @content;
+  }
+}
+
+// Contenedor flex genérico.
+@mixin flex(
+  $direction: row,
+  $justify: flex-start,
+  $align: flex-start,
+  $gap: null
+) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+
+  @if $gap != null {
+    gap: $gap;
+  }
+}
+
+// Truncado de una sola línea con puntos suspensivos.
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Texto meta (pequeño, secundario).
+@mixin meta {
+  font-size: 0.875rem;
+  color: $muted;
+}
+
+// Texto numérico (monospace) para montos.
+@mixin amount-text {
+  margin-top: space(3);
+  font-family: $font-mono;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  @include truncate;
+
+  @include media($bp-sm) {
+    font-size: 1.5rem;
+  }
+}
+
+// Título principal de página (hero).
+@mixin page-title {
+  margin-top: space(3);
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: $ink;
+
+  @include media($bp-sm) {
+    font-size: 3rem;
+  }
+}
+
+// ------------------------------------------------------------
+// Mixins de componentes
+// ------------------------------------------------------------
+
+// Cáscara de página (wrapper global de PageLayout).
+@mixin page-shell {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  background-color: $page;
+}
+
+// Ancho máximo común para contenedores (navbar, footer, main).
+$container-max-width: 64rem;
+
+// Contenedor centrado (ancho máximo compartido).
+@mixin container($max-width: $container-max-width) {
+  margin-inline: auto;
+  width: 100%;
+  max-width: $max-width;
+}
+
+// Contenedor principal centrado.
+@mixin main-container($max-width: $container-max-width) {
+  @include container($max-width);
+  flex: 1 1 0%;
+  padding: space(10) space(4);
+
+  @include media($bp-sm) {
+    padding: space(14) space(6);
+  }
+}
+
+// Tarjeta base reutilizable.
+@mixin card($padding: space(5), $radius: $radius-lg, $border-color: $line) {
+  border-radius: $radius;
+  border: 1px solid $border-color;
+  background-color: $panel;
+  padding: $padding;
+  box-shadow: $shadow-card;
+}
+
+// Insignia / etiqueta de sección.
+@mixin badge($color: $brand-700) {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: $color;
+}
+
+// Caja de alerta / error.
+@mixin alert {
+  margin-top: space(8);
+  border-radius: $radius-md;
+  border: 1px solid $alert-border;
+  background-color: $alert-bg;
+  padding: space(5);
+  color: $alert-ink;
+}
+
+// Botón de acción (dentro de tarjetas).
+@mixin action-button {
+  flex: 1;
+  border-radius: $radius-sm;
+  border: 1px solid $line;
+  background-color: $panel;
+  padding-block: space(2);
+  text-align: center;
+  color: $ink;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: $surface-2;
+  }
+}

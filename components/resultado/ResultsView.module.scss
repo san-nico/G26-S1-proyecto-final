@@ -1,0 +1,125 @@
+@use "../../app/styles/theme" as *;
+
+.main {
+  @include main-container;
+}
+
+.hero {
+  max-width: 42rem;
+}
+
+.badge {
+  @include badge;
+}
+
+.title {
+  @include page-title;
+}
+
+.alert {
+  @include alert;
+}
+
+.alertText {
+  font-weight: 700;
+}
+
+.content {
+  margin-top: space(10);
+
+  > * + * {
+    margin-top: space(8);
+  }
+}
+
+.bankHeader {
+  @include card($padding: space(5), $radius: $radius-lg);
+
+  @include media($bp-sm) {
+    padding: space(6);
+  }
+}
+
+.bankTitle {
+  margin-top: space(1);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.bankMeta {
+  margin-top: space(2);
+  @include meta;
+}
+
+.grid {
+  display: grid;
+  gap: space(4);
+
+  @include media($bp-md) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  overflow: hidden;
+  border-radius: $radius-lg;
+  border-width: 1px;
+  border-style: solid;
+  padding: space(5);
+  box-shadow: $shadow-card;
+}
+
+.cardCategory {
+  font-size: 0.875rem;
+  font-weight: 700;
+  @include truncate;
+}
+
+.cardTitle {
+  margin-top: space(2);
+  font-weight: 600;
+  color: $ink;
+  @include truncate;
+}
+
+.cardAmount {
+  @include amount-text;
+}
+
+.cardMeta {
+  margin-top: space(1);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  color: $muted;
+  @include truncate;
+}
+
+.cardIncome {
+  border-color: $income-200;
+  background-color: $income-50;
+}
+
+.textIncome {
+  color: $income-700;
+}
+
+.cardExpense {
+  border-color: $expense-200;
+  background-color: $expense-50;
+}
+
+.textExpense {
+  color: $expense-700;
+}
+
+.cardResult {
+  border-color: $result-200;
+  background-color: $result-50;
+}
+
+.textResult {
+  color: $result-700;
+}

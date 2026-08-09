@@ -1,0 +1,13 @@
+@use "../../app/styles/theme" as *;
+
+.layout {
+  @include page-shell;
+}
+
+.shell {
+  flex-shrink: 0;
+}
+
+.main {
+  @include main-container;
+}

@@ -1,0 +1,25 @@
+@use "styles/theme" as *;
+
+// ============================================================
+// Estilos globales
+// ------------------------------------------------------------
+// El tema vive en app/styles/_theme.scss (variables + mixins) y
+// se importa aquí y en cada módulo de componente.
+// Este archivo solo define reglas base de `html` y `body`.
+// ============================================================
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: $page;
+  color: $ink;
+  font-family: $font-sans;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
