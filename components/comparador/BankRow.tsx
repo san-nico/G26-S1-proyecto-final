@@ -1,6 +1,7 @@
+import Image from "next/image";
 import { getBalanceAccounts } from "@/lib/cmf";
 import type { BalanceTarget } from "@/lib/types";
-import { formatValue } from "@/lib/format";
+import { formatBillions, toNumber } from "@/lib/format";
 
 type BankRowProps = {
   code: string;
@@ -10,12 +11,6 @@ type BankRowProps = {
   month: string;
 };
 
-function toNumber(value?: string): number {
-  if (!value) return Number.NaN;
-  const num = Number(value.replace(",", "."));
-  return Number.isFinite(num) ? num : Number.NaN;
-}
-
 export default async function BankRow({
   code,
   bankName,
@@ -24,7 +19,6 @@ export default async function BankRow({
   month,
 }: BankRowProps) {
   let name = bankName;
-  let values: Record<string, string> = {};
   let raw: Record<string, number> = {};
   let error = "";
 
@@ -35,12 +29,6 @@ export default async function BankRow({
       accounts.map((item) => [
         item.code,
         toNumber(data.accounts[item.code]),
-      ]),
-    );
-    values = Object.fromEntries(
-      accounts.map((item) => [
-        item.code,
-        formatValue(data.accounts[item.code]),
       ]),
     );
   } catch {
@@ -57,16 +45,38 @@ export default async function BankRow({
     const value = raw[itemCode];
     if (!Number.isFinite(value)) return "";
     const percent = (value / baseRaw) * 100;
-    return `${percent.toLocaleString("es-CL", { maximumFractionDigits: 1 })}%`;
+    return `${percent.toLocaleString("es-CL", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}%`;
+  };
+
+  const moneyFor = (itemCode: string): string => {
+    if (error) return "";
+    const formatted = formatBillions(String(raw[itemCode] ?? ""));
+    return formatted === "—" ? "—" : `${formatted} billones`;
   };
 
   return (
     <tr className="border-b border-line-soft last:border-0 hover:bg-surface-2">
       <td className="px-4 py-3">
-        <span className="block font-bold uppercase leading-snug text-ink">
-          {name}
+        <span className="flex items-center gap-3">
+          <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-line bg-panel">
+            <Image
+              width={36}
+              height={36}
+              src={`/bank-logos/${code}.png`}
+              alt={`Logo de ${name}`}
+              className="object-contain"
+            />
+          </span>
+          <span className="min-w-0">
+            <span className="block font-bold uppercase leading-snug text-ink">
+              {name}
+            </span>
+            <span className="meta">Código {code}</span>
+          </span>
         </span>
-        <span className="meta">Código {code}</span>
       </td>
       {accounts.map((item) => (
         <td key={item.code} className="px-4 py-3 text-right">
@@ -74,11 +84,11 @@ export default async function BankRow({
             <span className="text-muted">—</span>
           ) : (
             <>
-              <span className="block font-mono tabular-nums font-semibold text-ink">
-                CLP {values[item.code]}
-              </span>
-              <span className="block text-xs text-muted">
+              <span className="block font-mono text-lg font-bold tabular-nums text-ink">
                 {percentFor(item.code)}
+              </span>
+              <span className="block font-mono text-xs tabular-nums text-muted">
+                {moneyFor(item.code)}
               </span>
             </>
           )}

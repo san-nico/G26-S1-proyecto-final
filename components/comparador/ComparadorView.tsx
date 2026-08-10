@@ -4,8 +4,6 @@ import type { BalanceTarget, Bank } from "@/lib/types";
 type ComparadorViewProps = {
   banks: Bank[];
   accounts: BalanceTarget[];
-  year: string;
-  month: string;
   error: string;
   children: React.ReactNode;
 };
@@ -13,8 +11,6 @@ type ComparadorViewProps = {
 export default function ComparadorView({
   banks,
   accounts,
-  year,
-  month,
   error,
   children,
 }: ComparadorViewProps) {
@@ -24,13 +20,13 @@ export default function ComparadorView({
         <p className="badge">Datos oficiales CMF Chile</p>
         <h1 className="page-title">Comparador de Bancos</h1>
         <p className="mt-4 text-lg leading-7 text-muted">
-          Compara los estados de situación financiera de cada institución para
-          el período{" "}
-          <span className="font-semibold text-ink">
-            {month}/{year}
-          </span>
-          . Los porcentajes del Pasivo y el Patrimonio se calculan sobre el
-          Activo Total.
+          Compara los estados de situación financiera de cada institución.
+        </p>
+        <p className="meta mt-3">
+          Porcentaje principal de cada cuenta; el monto de apoyo se expresa en{" "}
+          <span className="font-semibold text-ink">billones de CLP</span> (un
+          billón = $1.000.000.000). El Pasivo y el Patrimonio se calculan sobre
+          el Activo Total.
         </p>
       </section>
 
@@ -41,7 +37,7 @@ export default function ComparadorView({
         </div>
       ) : banks.length === 0 ? (
         <p className="card mt-10 rounded-xl p-6 text-muted">
-          No se encontraron instituciones para el período seleccionado.
+          No se encontraron instituciones para los parámetros seleccionados.
         </p>
       ) : (
         <section className="mt-10" aria-labelledby="comparador-title">
@@ -62,6 +58,9 @@ export default function ComparadorView({
                       className="px-4 py-3 text-right text-xs font-bold uppercase tracking-widest text-muted"
                     >
                       {item.title}
+                      <span className="mt-1 block text-[10px] font-semibold normal-case tracking-normal">
+                        Billones de CLP
+                      </span>
                     </th>
                   ))}
                 </tr>

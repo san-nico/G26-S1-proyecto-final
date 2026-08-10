@@ -37,8 +37,6 @@ export default async function ComparadorPage({
     <ComparadorView
       banks={banks}
       accounts={TARGET_ACCOUNTS}
-      year={year}
-      month={month}
       error={error}
     >
       {banks.map((bank) => (

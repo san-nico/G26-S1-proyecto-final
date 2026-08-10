@@ -18,11 +18,19 @@ export default function Navbar() {
   const comparadorUrl = `/comparador?year=${year}&month=${month}`;
 
   return (
-    <header className="border-b border-line bg-panel">
+    <header className="sticky top-0 z-40 border-b border-line bg-panel">
       <nav className="container-shell flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <Link href="/" className="text-lg font-bold text-brand-800">
-          CMF Bancos
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/" className="text-lg font-bold text-brand-800">
+            CMF Bancos
+          </Link>
+          <span
+            aria-label={`Período ${month}/${year}`}
+            className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold tabular-nums text-brand-800 shadow-[inset_0_0_0_1px_rgb(5_150_105_/_0.2)]"
+          >
+            {month}/{year}
+          </span>
+        </div>
         <Link
           href={comparadorUrl}
           aria-current={isActive ? "page" : undefined}

@@ -38,17 +38,12 @@ export default async function BanksPage({
   const now = new Date();
   const selectedYear = year || now.getFullYear().toString();
   const selectedMonth = month || (now.getMonth() + 1).toString();
-  const periodText = new Intl.DateTimeFormat("es-CL", { month: "long" }).format(
-    new Date(parseInt(selectedYear, 10), parseInt(selectedMonth, 10) - 1, 1),
-  );
-  const capitalizedPeriod = `${periodText.charAt(0).toUpperCase() + periodText.slice(1)} de ${selectedYear}`;
 
   return (
     <PageLayout>
       <BancosView
         banks={banks}
         error={error}
-        capitalizedPeriod={capitalizedPeriod}
         selectedYear={selectedYear}
         selectedMonth={selectedMonth}
       />

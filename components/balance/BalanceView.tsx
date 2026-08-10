@@ -11,15 +11,11 @@ type Card = {
 export default function BalanceView({
   bankName,
   code,
-  year,
-  month,
   cards,
   error,
 }: {
   bankName: string;
   code: string;
-  year: string;
-  month: string;
   cards: Card[];
   error?: string;
 }) {
@@ -38,9 +34,7 @@ export default function BalanceView({
         <div className="mt-10 [&>*+*]:mt-8">
           <header className="card p-5 sm:p-6">
             <h2 className="mt-1 text-2xl font-bold text-ink">{bankName}</h2>
-            <p className="meta mt-2">
-              Código: {code} · Período: {month}/{year}
-            </p>
+            <p className="meta mt-2">Código: {code}</p>
           </header>
 
           <section

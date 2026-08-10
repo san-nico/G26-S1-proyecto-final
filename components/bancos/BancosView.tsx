@@ -8,7 +8,6 @@ type Bank = {
 type BancosViewProps = {
   banks: Bank[];
   error: string;
-  capitalizedPeriod: string;
   selectedYear: string;
   selectedMonth: string;
 };
@@ -16,7 +15,6 @@ type BancosViewProps = {
 export default function BancosView({
   banks,
   error,
-  capitalizedPeriod,
   selectedYear,
   selectedMonth,
 }: BancosViewProps) {
@@ -25,16 +23,12 @@ export default function BancosView({
       <section className="max-w-3xl">
         <div className="flex flex-wrap items-center gap-3">
           <p className="badge">Datos oficiales CMF Chile</p>
-          <span className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800 shadow-[inset_0_0_0_1px_rgb(5_150_105_/_0.2)]">
-            Periodo: {capitalizedPeriod}
-          </span>
         </div>
 
         <h1 className="page-title">Instituciones Bancarias</h1>
 
         <p className="mt-4 text-lg leading-7 text-muted">
-          Consulta las instituciones registradas y vigentes correspondientes a{" "}
-          <span className="font-semibold text-ink">{capitalizedPeriod}</span>.
+          Consulta las instituciones registradas y vigentes en la CMF.
         </p>
       </section>
 

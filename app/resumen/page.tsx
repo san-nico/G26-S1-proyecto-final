@@ -22,7 +22,7 @@ export default async function ResumenPage({
   const month = params.month || String(now.getMonth() + 1).padStart(2, "0");
 
   return (
-    <ResumenView code={code} year={year} month={month}>
+    <ResumenView>
       <Suspense fallback={<SectionSkeleton title="Ficha" />}>
         <FichaSection code={code} year={year} month={month} />
       </Suspense>

@@ -47,8 +47,6 @@ export default async function SummaryPage({
     <ResultsView
       bankName={bankName}
       code={code}
-      year={year}
-      month={month}
       cards={cards}
       error={error}
     />

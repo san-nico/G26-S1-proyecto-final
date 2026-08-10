@@ -34,7 +34,7 @@ export async function getBanks(year?: string, month?: string): Promise<Bank[]> {
 
   const res = await cmfFetch(url, {
     headers: { Accept: "application/json" },
-    cache: "no-store",
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) {

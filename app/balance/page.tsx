@@ -45,8 +45,6 @@ export default async function BalancePage({
     <BalanceView
       bankName={bankName}
       code={code}
-      year={year}
-      month={month}
       cards={cards}
       error={error}
     />
