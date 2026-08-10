@@ -1,32 +1,4 @@
-export interface BalanceTarget {
-  code: string;
-  category: string;
-  title: string;
-  style: string;
-}
-
-export const TARGET_ACCOUNTS: BalanceTarget[] = [
-  {
-    code: "100000000",
-    category: "Activo",
-    title: "Activo Total",
-    style: "border-income-200 bg-income-50/60 text-income-700",
-  },
-  {
-    code: "200000000",
-    category: "Pasivo",
-    title: "Pasivo Total",
-    style: "border-alert-border bg-[#fef3c7]/60 text-[#b45309]",
-  },
-  {
-    code: "300000000",
-    category: "Patrimonio",
-    title: "Patrimonio Total",
-    style: "border-result-200 bg-result-50/60 text-result-700",
-  },
-];
-
-export interface ResultTarget {
+export interface AccountTarget {
   code: string;
   category: string;
   title: string;
@@ -34,7 +6,31 @@ export interface ResultTarget {
   textClass: string;
 }
 
-export const SUMMARY_GROUPS: ResultTarget[] = [
+export const ACCOUNTS_BALANCE: AccountTarget[] = [
+  {
+    code: "100000000",
+    category: "Activo",
+    title: "Activo Total",
+    cardClass: "border-income-200 bg-income-50/60",
+    textClass: "text-income-700",
+  },
+  {
+    code: "200000000",
+    category: "Pasivo",
+    title: "Pasivo Total",
+    cardClass: "border-alert-border bg-[#fef3c7]/60",
+    textClass: "text-[#b45309]",
+  },
+  {
+    code: "300000000",
+    category: "Patrimonio",
+    title: "Patrimonio Total",
+    cardClass: "border-result-200 bg-result-50/60",
+    textClass: "text-result-700",
+  },
+];
+
+export const ACCOUNTS_RESULTADO: AccountTarget[] = [
   {
     code: "550000000",
     category: "Ingresos",

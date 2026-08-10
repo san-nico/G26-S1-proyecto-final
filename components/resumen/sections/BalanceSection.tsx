@@ -1,5 +1,8 @@
-import { getBalanceAccounts } from "@/lib/cmf";
-import { TARGET_ACCOUNTS } from "@/lib/types";
+import {
+  getAccountDetailByAllInstitutions,
+  getAccountsByAllInstitutions,
+} from "@/lib/cmf";
+import { ACCOUNTS_BALANCE } from "@/lib/types";
 import { formatValue } from "@/lib/format";
 import SummaryCard from "@/components/global/SummaryCard";
 
@@ -13,7 +16,8 @@ type BalanceCard = {
   category: string;
   title: string;
   amount: string;
-  style: string;
+  cardClass: string;
+  textClass: string;
 };
 
 export default async function BalanceSection({
@@ -26,13 +30,29 @@ export default async function BalanceSection({
   let error = "";
 
   try {
-    const data = await getBalanceAccounts(code, year, month);
-    bankName = data.bankName;
-    cards = TARGET_ACCOUNTS.map((item) => ({
+    const accountMap = await getAccountsByAllInstitutions(
+      ACCOUNTS_BALANCE.map((item) => item.code),
+      year,
+      month,
+    );
+
+    try {
+      const detail = await getAccountDetailByAllInstitutions(
+        ACCOUNTS_BALANCE[0]?.code ?? "",
+        year,
+        month,
+      );
+      bankName = detail.institutions[code]?.bankName || "";
+    } catch {
+    }
+    bankName ||= code === "999" ? "SISTEMA FINANCIERO" : `Institución ${code}`;
+
+    cards = ACCOUNTS_BALANCE.map((item) => ({
       category: item.category,
       title: item.title,
-      amount: formatValue(data.accounts[item.code]),
-      style: item.style,
+      amount: formatValue(accountMap[item.code]?.[code]),
+      cardClass: item.cardClass,
+      textClass: item.textClass,
     }));
   } catch {
     error =
@@ -69,7 +89,8 @@ export default async function BalanceSection({
                 category={card.category}
                 title={card.title}
                 amount={card.amount}
-                cardClass={card.style}
+                cardClass={card.cardClass}
+                textClass={card.textClass}
                 headingLevel="h4"
               />
             ))}

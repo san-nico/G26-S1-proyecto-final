@@ -1,5 +1,7 @@
 export interface CmfAccount {
   CodigoCuenta?: string;
+  DescripcionCuenta?: string;
+  CodigoInstitucion?: string;
   MonedaTotal?: string;
   NombreInstitucion?: string;
 }

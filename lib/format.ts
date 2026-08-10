@@ -1,3 +1,10 @@
+import type { AccountCell } from "@/lib/types";
+
+export function bankLogoPath(code: string): string {
+  const ext = code === "999" ? "svg" : "png";
+  return `/bank-logos/${code}.${ext}`;
+}
+
 export function formatValue(value?: string) {
   if (!value) return "—";
   const num = Math.round(Number(value.replace(",", ".")));
@@ -16,5 +23,46 @@ export function formatBillions(value?: string): string {
   const num = toNumber(value);
   if (!Number.isFinite(num)) return "—";
   const billions = num / BILLION;
-  return `${billions.toLocaleString("es-CL", { maximumFractionDigits: 2 })}`;
+  return `${billions.toLocaleString("es-CL", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+export function formatBillionsWithSuffix(value?: string): string {
+  const formatted = formatBillions(value);
+  return formatted === "—" ? "—" : `${formatted} billones`;
+}
+
+export function formatPercent(value: number, base: number): string | null {
+  if (!Number.isFinite(value) || !Number.isFinite(base) || base <= 0) {
+    return null;
+  }
+  const percent = (value / base) * 100;
+  return `${percent.toLocaleString("es-CL", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}%`;
+}
+
+export function buildAccountCell(
+  rawValue: string | undefined,
+  baseRaw: number,
+  isBase: boolean,
+): AccountCell {
+  const valueRaw = toNumber(rawValue);
+  const hasValue = rawValue != null && Number.isFinite(valueRaw);
+
+  if (isBase) {
+    const valid = hasValue && baseRaw > 0;
+    return {
+      money: valid ? formatBillionsWithSuffix(rawValue) : "—",
+      percent: valid ? "100%" : "—",
+    };
+  }
+
+  return {
+    money: hasValue ? formatBillionsWithSuffix(rawValue) : "—",
+    percent: formatPercent(valueRaw, baseRaw) ?? "—",
+  };
 }

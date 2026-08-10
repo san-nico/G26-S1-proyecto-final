@@ -5,7 +5,8 @@ type Card = {
   category: string;
   title: string;
   amount: string;
-  style: string;
+  cardClass: string;
+  textClass: string;
 };
 
 export default function BalanceView({
@@ -47,7 +48,8 @@ export default function BalanceView({
                 category={card.category}
                 title={card.title}
                 amount={card.amount}
-                cardClass={card.style}
+                cardClass={card.cardClass}
+                textClass={card.textClass}
               />
             ))}
           </section>

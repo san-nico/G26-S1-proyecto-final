@@ -1,5 +1,6 @@
 import FichaView from "@/components/ficha/FichaView";
 import { getPerfilInstitucion } from "@/lib/cmf";
+import { resolvePeriodParams } from "@/lib/params";
 
 interface PageProps {
   searchParams: Promise<{
@@ -10,10 +11,10 @@ interface PageProps {
 }
 
 export default async function Page(props: PageProps) {
-  const searchParams = await props.searchParams;
-  const { codigo, year, month } = searchParams;
+  const params = await props.searchParams;
+  const { code, year, month } = resolvePeriodParams(params);
 
-  const perfil = await getPerfilInstitucion({ codigo, year, month });
+  const perfil = await getPerfilInstitucion({ codigo: code, year, month });
 
   return <FichaView perfil={perfil} />;
 }

@@ -8,6 +8,21 @@ export interface AccountsResponse {
   accounts: Record<string, string>;
 }
 
+export interface AccountDetailEntry {
+  bankName: string;
+  value: string;
+}
+
+export interface AccountDetailResponse {
+  accountName: string;
+  institutions: Record<string, AccountDetailEntry>;
+}
+
+export interface AccountCell {
+  money: string;
+  percent: string;
+}
+
 export interface PerfilInstitucion {
   nombre: string;
   rut: string;

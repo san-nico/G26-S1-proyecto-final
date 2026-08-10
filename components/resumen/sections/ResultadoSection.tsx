@@ -1,5 +1,5 @@
 import { getResultAccounts } from "@/lib/cmf";
-import { SUMMARY_GROUPS } from "@/lib/types";
+import { ACCOUNTS_RESULTADO } from "@/lib/types";
 import { formatValue } from "@/lib/format";
 import SummaryCard from "@/components/global/SummaryCard";
 
@@ -27,9 +27,14 @@ export default async function ResultadoSection({
   let error = "";
 
   try {
-    const data = await getResultAccounts(code, year, month);
+    const data = await getResultAccounts(
+      code,
+      year,
+      month,
+      ACCOUNTS_RESULTADO.map((group) => group.code),
+    );
     bankName = data.bankName;
-    cards = SUMMARY_GROUPS.map((group) => ({
+    cards = ACCOUNTS_RESULTADO.map((group) => ({
       category: group.category,
       title: group.title,
       amount: formatValue(data.accounts[group.code]),

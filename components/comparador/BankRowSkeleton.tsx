@@ -1,9 +1,9 @@
-import type { BalanceTarget } from "@/lib/types";
+import type { AccountTarget } from "@/lib/types";
 
 type BankRowSkeletonProps = {
   code: string;
   bankName: string;
-  accounts: BalanceTarget[];
+  accounts: AccountTarget[];
 };
 
 export default function BankRowSkeleton({

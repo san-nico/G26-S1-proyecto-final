@@ -1,27 +1,24 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import ComparadorView from "@/components/comparador/ComparadorView";
-import BankRow from "@/components/comparador/BankRow";
-import BankRowSkeleton from "@/components/comparador/BankRowSkeleton";
-import { getBanks } from "@/lib/cmf";
-import { TARGET_ACCOUNTS } from "@/lib/types";
+import { getAccountsByAllInstitutions, getBanks } from "@/lib/cmf";
+import { ACCOUNTS_BALANCE } from "@/lib/types";
 import type { Bank } from "@/lib/types";
+import { buildAccountCell, toNumber } from "@/lib/format";
+import { resolvePeriodParams } from "@/lib/params";
 
 export const metadata: Metadata = {
-  title: "Comparador de bancos | CMF Chile",
+  title: "Comparador de Bancos | CMF Chile",
   description:
-    "Compara los estados de situación financiera de las instituciones bancarias registradas en la CMF.",
+    "Compara los estados de situación financiera de las instituciones bancarias registradas en la CMF, consultando el detalle de cada cuenta.",
 };
 
 export default async function ComparadorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ year?: string; month?: string }>;
+  searchParams: Promise<{ codigo?: string; year?: string; month?: string }>;
 }) {
   const params = await searchParams;
-  const now = new Date();
-  const year = params.year || String(now.getFullYear());
-  const month = params.month || String(now.getMonth() + 1).padStart(2, "0");
+  const { code: selectedCode, year, month } = resolvePeriodParams(params, "");
 
   let banks: Bank[] = [];
   let error = "";
@@ -33,32 +30,47 @@ export default async function ComparadorPage({
       err instanceof Error ? err.message : "Error al cargar los bancos.";
   }
 
+  const accountMap = await getAccountsByAllInstitutions(
+    ACCOUNTS_BALANCE.map((item) => item.code),
+    year,
+    month,
+  );
+
+  const baseCode = ACCOUNTS_BALANCE[0]?.code ?? "";
+
+  const rows = banks.map((bank) => {
+    const baseRaw = toNumber(accountMap[baseCode]?.[bank.CodigoInstitucion]);
+    const cells = Object.fromEntries(
+      ACCOUNTS_BALANCE.map((item) => [
+        item.code,
+        buildAccountCell(
+          accountMap[item.code]?.[bank.CodigoInstitucion],
+          baseRaw,
+          item.code === baseCode,
+        ),
+      ]),
+    );
+
+    return {
+      code: bank.CodigoInstitucion,
+      bankName: bank.NombreInstitucion,
+      cells,
+    };
+  });
+
+  rows.sort(
+    (a, b) =>
+      toNumber(accountMap[baseCode]?.[b.code]) -
+      toNumber(accountMap[baseCode]?.[a.code]),
+  );
+
   return (
     <ComparadorView
       banks={banks}
-      accounts={TARGET_ACCOUNTS}
+      accounts={ACCOUNTS_BALANCE}
+      rows={rows}
+      selectedCode={selectedCode}
       error={error}
-    >
-      {banks.map((bank) => (
-        <Suspense
-          key={bank.CodigoInstitucion}
-          fallback={
-            <BankRowSkeleton
-              code={bank.CodigoInstitucion}
-              bankName={bank.NombreInstitucion}
-              accounts={TARGET_ACCOUNTS}
-            />
-          }
-        >
-          <BankRow
-            code={bank.CodigoInstitucion}
-            bankName={bank.NombreInstitucion}
-            accounts={TARGET_ACCOUNTS}
-            year={year}
-            month={month}
-          />
-        </Suspense>
-      ))}
-    </ComparadorView>
+    />
   );
 }

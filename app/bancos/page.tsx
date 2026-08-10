@@ -3,6 +3,7 @@ import BancosView from "@/components/bancos/BancosView";
 import PageLayout from "@/components/global/PageLayout";
 import { getBanks } from "@/lib/cmf";
 import type { Bank } from "@/lib/types";
+import { resolvePeriodParams } from "@/lib/params";
 
 export const metadata: Metadata = {
   title: "Instituciones bancarias | CMF Chile",
@@ -19,25 +20,20 @@ export default async function BanksPage({
   }>;
 }) {
   const params = await searchParams;
-  const year = (
-    Array.isArray(params.year) ? params.year[0] : params.year
-  )?.trim();
-  const month = (
-    Array.isArray(params.month) ? params.month[0] : params.month
-  )?.trim();
+  const { year, month } = resolvePeriodParams(params);
 
   let banks: Bank[] = [];
   let error = "";
 
   try {
     banks = await getBanks(year, month);
+    banks = banks.filter((bank) => bank.CodigoInstitucion !== "999");
   } catch (err) {
     error = err instanceof Error ? err.message : "Error al cargar los bancos.";
   }
 
-  const now = new Date();
-  const selectedYear = year || now.getFullYear().toString();
-  const selectedMonth = month || (now.getMonth() + 1).toString();
+  const selectedYear = year;
+  const selectedMonth = month;
 
   return (
     <PageLayout>

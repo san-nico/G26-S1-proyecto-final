@@ -1,34 +1,33 @@
 import PageLayout from "@/components/global/PageLayout";
-import type { BalanceTarget, Bank } from "@/lib/types";
+import ComparadorHeader from "@/components/comparador/ComparadorHeader";
+import ComparadorTable from "@/components/comparador/ComparadorTable";
+import BankTableRow from "@/components/comparador/BankTableRow";
+import type { AccountCell, AccountTarget, Bank } from "@/lib/types";
+
+type BankRow = {
+  code: string;
+  bankName: string;
+  cells: Record<string, AccountCell>;
+};
 
 type ComparadorViewProps = {
   banks: Bank[];
-  accounts: BalanceTarget[];
+  accounts: AccountTarget[];
+  rows: BankRow[];
+  selectedCode: string;
   error: string;
-  children: React.ReactNode;
 };
 
 export default function ComparadorView({
   banks,
   accounts,
+  rows,
+  selectedCode,
   error,
-  children,
 }: ComparadorViewProps) {
   return (
     <PageLayout mainClassName="container-main">
-      <section className="max-w-3xl">
-        <p className="badge">Datos oficiales CMF Chile</p>
-        <h1 className="page-title">Comparador de Bancos</h1>
-        <p className="mt-4 text-lg leading-7 text-muted">
-          Compara los estados de situación financiera de cada institución.
-        </p>
-        <p className="meta mt-3">
-          Porcentaje principal de cada cuenta; el monto de apoyo se expresa en{" "}
-          <span className="font-semibold text-ink">billones de CLP</span> (un
-          billón = $1.000.000.000). El Pasivo y el Patrimonio se calculan sobre
-          el Activo Total.
-        </p>
-      </section>
+      <ComparadorHeader description="Compara los estados de situación financiera de cada institución consultando el detalle de cada cuenta." />
 
       {error ? (
         <div role="alert" className="alert">
@@ -44,30 +43,18 @@ export default function ComparadorView({
           <h2 id="comparador-title" className="text-2xl font-bold text-ink">
             Instituciones
           </h2>
-
-          <div className="card mt-6 overflow-x-auto p-0">
-            <table className="w-full min-w-max border-collapse text-left text-sm">
-              <thead>
-                <tr className="border-b border-line bg-surface-1">
-                  <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-muted">
-                    Institución
-                  </th>
-                  {accounts.map((item) => (
-                    <th
-                      key={item.code}
-                      className="px-4 py-3 text-right text-xs font-bold uppercase tracking-widest text-muted"
-                    >
-                      {item.title}
-                      <span className="mt-1 block text-[10px] font-semibold normal-case tracking-normal">
-                        Billones de CLP
-                      </span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>{children}</tbody>
-            </table>
-          </div>
+          <ComparadorTable accounts={accounts}>
+            {rows.map((row) => (
+              <BankTableRow
+                key={row.code}
+                code={row.code}
+                bankName={row.bankName}
+                cells={row.cells}
+                accounts={accounts}
+                selectedCode={selectedCode}
+              />
+            ))}
+          </ComparadorTable>
         </section>
       )}
     </PageLayout>

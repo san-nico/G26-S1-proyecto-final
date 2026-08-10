@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { bankLogoPath } from "@/lib/format";
 
 type BancosCardProps = {
   bank: {
@@ -15,11 +16,11 @@ export default function BancosCard({
   selectedYear,
   selectedMonth,
 }: BancosCardProps) {
-  const resumenUrl = `/resumen?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
+  const comparadorUrl = `/resumen?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
 
   return (
     <Link
-      href={resumenUrl}
+      href={comparadorUrl}
       target="_blank"
       className="group block no-underline"
     >
@@ -28,7 +29,7 @@ export default function BancosCard({
           <Image
             width={100}
             height={100}
-            src={`/bank-logos/${bank.CodigoInstitucion}.png`}
+            src={bankLogoPath(bank.CodigoInstitucion)}
             alt={`Logo de ${bank.NombreInstitucion}`}
             className="object-contain"
           />

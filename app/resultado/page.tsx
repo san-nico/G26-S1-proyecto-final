@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import ResultsView from "@/components/resultado/ResultsView";
 import { getResultAccounts } from "@/lib/cmf";
-import { SUMMARY_GROUPS } from "@/lib/types";
+import { ACCOUNTS_RESULTADO } from "@/lib/types";
 import { formatValue } from "@/lib/format";
+import { resolvePeriodParams } from "@/lib/params";
 
 export const metadata: Metadata = {
   title: "Resumen de Estado de Resultado | CMF Chile",
@@ -14,10 +15,7 @@ export default async function SummaryPage({
   searchParams: Promise<{ codigo?: string; year?: string; month?: string }>;
 }) {
   const params = await searchParams;
-  const now = new Date();
-  const code = params.codigo || "999";
-  const year = params.year || String(now.getFullYear());
-  const month = params.month || String(now.getMonth() + 1).padStart(2, "0");
+  const { code, year, month } = resolvePeriodParams(params);
 
   let bankName = "";
   let cards: {
@@ -30,9 +28,14 @@ export default async function SummaryPage({
   let error = "";
 
   try {
-    const data = await getResultAccounts(code, year, month);
+    const data = await getResultAccounts(
+      code,
+      year,
+      month,
+      ACCOUNTS_RESULTADO.map((group) => group.code),
+    );
     bankName = data.bankName;
-    cards = SUMMARY_GROUPS.map((group) => ({
+    cards = ACCOUNTS_RESULTADO.map((group) => ({
       category: group.category,
       title: group.title,
       amount: formatValue(data.accounts[group.code]),

@@ -1,4 +1,5 @@
 import type {
+  AccountDetailResponse,
   AccountsResponse,
   Bank,
   CmfAccount,
@@ -6,107 +7,257 @@ import type {
   PerfilInstitucion,
   PerfilResponseAPI,
 } from "@/lib/types";
+import { ACCOUNTS_BALANCE } from "@/lib/types";
 
 const CMF_BASE_URL = "https://cmf-api-chile.vercel.app/api-sbifv3/recursos_api";
 
 async function cmfFetch(url: string, init?: RequestInit): Promise<Response> {
   console.log(`[CMF] GET ${url}`);
-  return fetch(url, init);
+  const res = await fetch(url, init);
+  if (!res.ok) {
+    throw new Error(
+      `CMF API error: ${res.status} ${res.statusText} for URL: ${url}`,
+    );
+  }
+  return res;
 }
 
-export async function getBanks(year?: string, month?: string): Promise<Bank[]> {
+function getApiKey(): string {
   const apiKey = process.env.CMF_API_KEY;
-
   if (!apiKey) {
     throw new Error(
       "La clave de la API (CMF_API_KEY) no está configurada en .env.local.",
     );
   }
+  return apiKey;
+}
 
+function getCurrentYearMonth(): { year: string; month: string } {
   const now = new Date();
-  const selectedYear = year || now.getFullYear().toString();
-  const selectedMonth = (month || (now.getMonth() + 1).toString()).padStart(
-    2,
-    "0",
+  return {
+    year: now.getFullYear().toString(),
+    month: (now.getMonth() + 1).toString().padStart(2, "0"),
+  };
+}
+
+export async function getBanks(year?: string, month?: string): Promise<Bank[]> {
+  getApiKey();
+  const { year: defaultYear, month: defaultMonth } = getCurrentYearMonth();
+  const selectedYear = year || defaultYear;
+  const selectedMonth = month || defaultMonth;
+
+  const baseCode = ACCOUNTS_BALANCE[0]?.code;
+  if (!baseCode) return [];
+
+  const detail = await getAccountDetailByAllInstitutions(
+    baseCode,
+    selectedYear,
+    selectedMonth,
   );
 
-  const url = `${CMF_BASE_URL}/balances/${selectedYear}/${selectedMonth}/instituciones?apikey=${apiKey}&formato=json`;
-
-  const res = await cmfFetch(url, {
-    headers: { Accept: "application/json" },
-    next: { revalidate: 3600 },
-  });
-
-  if (!res.ok) {
-    throw new Error(
-      `No se pudo obtener la información de la CMF para ${selectedMonth}/${selectedYear}.`,
-    );
-  }
-
-  const data = await res.json();
-  const raw = data?.DescripcionesCodigosDeInstituciones;
-  if (!raw) return [];
-
-  return (Array.isArray(raw) ? raw : [raw])
-    .map((b) => ({
-      CodigoInstitucion: b?.CodigoInstitucion?.toString().trim() || "",
-      NombreInstitucion: b?.NombreInstitucion?.toString().trim() || "",
+  return Object.entries(detail.institutions)
+    .map(([code, entry]) => ({
+      CodigoInstitucion: code,
+      NombreInstitucion: entry.bankName,
     }))
     .filter((b) => b.CodigoInstitucion && b.NombreInstitucion);
 }
 
-async function fetchAccounts(
+async function getInstitutionName(
+  institutionCode: string,
+  year: string,
+  month: string,
+  resource: string,
+  listKey: string,
+  accountCode: string,
+): Promise<string> {
+  try {
+    const detail = await getAccountDetailByResource(
+      resource,
+      listKey,
+      accountCode,
+      year,
+      month,
+    );
+    const name = detail.institutions[institutionCode]?.bankName;
+    if (name) return name;
+  } catch (error) {
+    console.warn(
+      `[CMF] Could not fetch institution name for ${institutionCode}:`,
+      error,
+    );
+  }
+  return institutionCode === "999"
+    ? "SISTEMA FINANCIERO"
+    : `Institución ${institutionCode}`;
+}
+
+async function fetchAccountResourceAccounts(
   resource: string,
   listKey: string,
   code: string,
   year: string,
   month: string,
+  accountCodes: string[],
 ): Promise<AccountsResponse> {
-  const url = `${CMF_BASE_URL}/${resource}/${year}/${month}/instituciones/${code}?apikey=${process.env.CMF_API_KEY || ""}&formato=json`;
+  const accountMap = await getAccountsByAllInstitutionsForResource(
+    resource,
+    listKey,
+    accountCodes,
+    year,
+    month,
+  );
+
+  const accounts = Object.fromEntries(
+    accountCodes.map((accountCode) => [
+      accountCode,
+      accountMap[accountCode]?.[code] ?? "",
+    ]),
+  );
+
+  const baseCode = accountCodes[0];
+  const bankName = baseCode
+    ? await getInstitutionName(code, year, month, resource, listKey, baseCode)
+    : "";
+
+  return { bankName, accounts };
+}
+
+export async function getBalanceAccounts(
+  code: string,
+  year: string,
+  month: string,
+  accountCodes: string[],
+): Promise<AccountsResponse> {
+  return fetchAccountResourceAccounts(
+    "balances",
+    "CodigosBalances",
+    code,
+    year,
+    month,
+    accountCodes,
+  );
+}
+
+export async function getResultAccounts(
+  code: string,
+  year: string,
+  month: string,
+  accountCodes: string[],
+): Promise<AccountsResponse> {
+  return fetchAccountResourceAccounts(
+    "resultados",
+    "CodigosEstadosDeResultado",
+    code,
+    year,
+    month,
+    accountCodes,
+  );
+}
+
+async function getAccountDetailByResource(
+  resource: string,
+  listKey: string,
+  accountCode: string,
+  year: string,
+  month: string,
+): Promise<AccountDetailResponse> {
+  const apiKey = getApiKey();
+  const url = `${CMF_BASE_URL}/${resource}/${year}/${month}/cuentas/${accountCode}?apikey=${apiKey}&formato=json`;
 
   const res = await cmfFetch(url, {
     headers: { Accept: "application/json" },
     next: { revalidate: 3600 },
   });
 
-  if (!res.ok) throw new Error();
-
   const data = await res.json();
-  const list: CmfAccount[] = Array.isArray(data?.[listKey])
-    ? data[listKey]
-    : [data?.[listKey]];
+  const rawList = data?.[listKey];
+  const list: CmfAccount[] = Array.isArray(rawList)
+    ? rawList
+    : [rawList].filter(Boolean);
 
-  let bankName = "";
-  const rawData: Record<string, string> = {};
+  const institutions: AccountDetailResponse["institutions"] = {};
+  let accountName = "";
 
   list.forEach((acc) => {
-    if (acc?.CodigoCuenta)
-      rawData[acc.CodigoCuenta.trim()] = acc.MonedaTotal ?? "";
-    if (!bankName && acc?.NombreInstitucion) bankName = acc.NombreInstitucion;
+    const code = acc?.CodigoInstitucion?.trim();
+    if (!code) return;
+    if (!accountName && acc?.DescripcionCuenta) {
+      accountName = acc.DescripcionCuenta;
+    }
+    institutions[code] = {
+      bankName:
+        acc?.NombreInstitucion?.trim() ||
+        (code === "999" ? "SISTEMA FINANCIERO" : `Institución ${code}`),
+      value: acc?.MonedaTotal ?? "",
+    };
   });
 
-  bankName ||= code === "999" ? "SISTEMA FINANCIERO" : `Institución ${code}`;
-
-  return { bankName, accounts: rawData };
+  return { accountName, institutions };
 }
 
-export function getBalanceAccounts(
-  code: string,
+export async function getAccountDetailByAllInstitutions(
+  accountCode: string,
   year: string,
   month: string,
-): Promise<AccountsResponse> {
-  return fetchAccounts("balances", "CodigosBalances", code, year, month);
+): Promise<AccountDetailResponse> {
+  return getAccountDetailByResource(
+    "balances",
+    "CodigosBalances",
+    accountCode,
+    year,
+    month,
+  );
 }
 
-export function getResultAccounts(
-  code: string,
+async function getAccountsByAllInstitutionsForResource(
+  resource: string,
+  listKey: string,
+  accountCodes: string[],
   year: string,
   month: string,
-): Promise<AccountsResponse> {
-  return fetchAccounts(
-    "resultados",
-    "CodigosEstadosDeResultado",
-    code,
+): Promise<Record<string, Record<string, string>>> {
+  const results = await Promise.all(
+    accountCodes.map(async (accountCode) => {
+      try {
+        const data = await getAccountDetailByResource(
+          resource,
+          listKey,
+          accountCode,
+          year,
+          month,
+        );
+        const values = Object.fromEntries(
+          Object.entries(data.institutions).map(([institutionCode, entry]) => [
+            institutionCode,
+            entry.value,
+          ]),
+        );
+        return { accountCode, values };
+      } catch (error) {
+        console.warn(
+          `[CMF] Failed to fetch account ${accountCode} for resource ${resource}:`,
+          error,
+        );
+        return { accountCode, values: {} };
+      }
+    }),
+  );
+
+  return Object.fromEntries(
+    results.map((result) => [result.accountCode, result.values]),
+  );
+}
+
+export async function getAccountsByAllInstitutions(
+  accountCodes: string[],
+  year: string,
+  month: string,
+): Promise<Record<string, Record<string, string>>> {
+  return getAccountsByAllInstitutionsForResource(
+    "balances",
+    "CodigosBalances",
+    accountCodes,
     year,
     month,
   );
@@ -117,13 +268,12 @@ export async function getPerfilInstitucion({
   year,
   month,
 }: FetchPerfilParams): Promise<PerfilInstitucion> {
-  const institucionCodigo = codigo;
-  const institucionYear = year || "2026";
-  const institucionMonth = month || "06";
+  const apiKey = getApiKey();
+  const { year: defaultYear, month: defaultMonth } = getCurrentYearMonth();
+  const institucionYear = year || defaultYear;
+  const institucionMonth = month || defaultMonth;
 
-  const apiKey = process.env.CMF_API_KEY;
-
-  const apiUrl = `${CMF_BASE_URL}/perfil/instituciones/${institucionCodigo}/${institucionYear}/${institucionMonth}?apikey=${apiKey}&formato=json`;
+  const apiUrl = `${CMF_BASE_URL}/perfil/instituciones/${codigo}/${institucionYear}/${institucionMonth}?apikey=${apiKey}&formato=json`;
 
   const res = await cmfFetch(apiUrl, {
     cache: "no-store",
@@ -132,16 +282,12 @@ export async function getPerfilInstitucion({
     },
   });
 
-  if (!res.ok) {
-    throw new Error(`Error en la API: ${res.status}`);
-  }
-
   const data: PerfilResponseAPI = await res.json();
   const perfil = data?.Perfiles?.[0]?.Perfil;
   const institucion = data?.Perfiles?.[0]?.Institucion;
 
   if (!perfil) {
-    throw new Error("No se encontró el perfil en la respuesta.");
+    throw new Error("No se encontró el perfil en la respuesta de la CMF.");
   }
 
   const fechaFormateada = perfil.fechaPublicacion
