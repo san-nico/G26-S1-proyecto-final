@@ -1,59 +1,104 @@
 import PageLayout from "@/components/global/PageLayout";
-import SummaryCard from "@/components/global/SummaryCard";
+import type { BalanceAccount } from "@/lib/types";
+import { formatValue } from "@/lib/format";
+import BankLogo from "../global/BankLogo";
 
-type Card = {
-  category: string;
-  title: string;
-  amount: string;
-  cardClass: string;
-  textClass: string;
+type BalanceViewProps = {
+  bankName: string;
+  code: string;
+  year: string;
+  month: string;
+  accounts: BalanceAccount[];
+  error: string;
 };
+
+function formatPeriod(year: string, month: string): string {
+  const date = new Date(Number(year), Number(month) - 1, 1);
+  if (Number.isNaN(date.getTime())) return `${year}-${month}`;
+  return date.toLocaleDateString("es-CL", {
+    year: "numeric",
+    month: "long",
+  });
+}
 
 export default function BalanceView({
   bankName,
   code,
-  cards,
+  year,
+  month,
+  accounts,
   error,
-}: {
-  bankName: string;
-  code: string;
-  cards: Card[];
-  error?: string;
-}) {
+}: BalanceViewProps) {
   return (
     <PageLayout mainClassName="container-main">
-      <section className="max-w-2xl">
-        <p className="badge">Datos oficiales CMF Chile</p>
-        <h1 className="page-title">Resumen de Estado de Situación Financiera</h1>
-      </section>
+      <section className="max-w-3xl"></section>
 
       {error ? (
         <div role="alert" className="alert">
-          <p className="font-bold">{error}</p>
+          <h2 className="font-bold">No se pudo cargar la información</h2>
+          <p className="mt-1 text-sm">{error}</p>
         </div>
       ) : (
-        <div className="mt-10 [&>*+*]:mt-8">
-          <header className="card p-5 sm:p-6">
-            <h2 className="mt-1 text-2xl font-bold text-ink">{bankName}</h2>
-            <p className="meta mt-2">Código: {code}</p>
-          </header>
+        <section className="" aria-labelledby="balance-title">
+          <h1 id="balance-title" className="text-3xl font-bold text-ink">
+            Estado de Situación Financiera
+          </h1>
 
-          <section
-            className="grid gap-4 md:grid-cols-3"
-            aria-label="Tarjetas de resumen financiero"
-          >
-            {cards.map((card, i) => (
-              <SummaryCard
-                key={i}
-                category={card.category}
-                title={card.title}
-                amount={card.amount}
-                cardClass={card.cardClass}
-                textClass={card.textClass}
-              />
-            ))}
-          </section>
-        </div>
+          {accounts.length === 0 ? (
+            <p className="card mt-6 rounded-xl p-6 text-muted">
+              No se encontraron cuentas para los parámetros seleccionados.
+            </p>
+          ) : (
+            <>
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <BankLogo>{code}</BankLogo>
+                <h3 className="text-lg font-bold text-ink">{bankName}</h3>
+                <span className="meta">Código {code}</span>
+              </div>
+
+              <div className="card mt-4 overflow-x-auto p-0">
+                <table className="w-full table-fixed border-collapse text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-line bg-surface-1">
+                      <th className="w-28 px-4 py-3 text-xs font-bold uppercase tracking-widest text-muted">
+                        Código
+                      </th>
+                      <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-muted">
+                        Cuenta
+                      </th>
+                      <th className="w-44 px-4 py-3 text-right text-xs font-bold uppercase tracking-widest text-muted">
+                        Moneda Total
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accounts.map((account) => (
+                      <tr
+                        key={account.CodigoCuenta}
+                        className="border-b border-line-soft last:border-0 hover:bg-surface-2"
+                      >
+                        <td className="whitespace-nowrap px-4 py-3 font-mono text-xs font-medium text-muted">
+                          {account.CodigoCuenta}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            title={account.DescripcionCuenta}
+                            className="block truncate text-ink"
+                          >
+                            {account.DescripcionCuenta}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-bold tabular-nums text-ink">
+                          {formatValue(account.MonedaTotal)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </section>
       )}
     </PageLayout>
   );

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import { bankLogoPath } from "@/lib/format";
+import BankLogo from "@/components/global/BankLogo";
 
 type BancosCardProps = {
   bank: {
@@ -25,15 +24,9 @@ export default function BancosCard({
       className="group block no-underline"
     >
       <article className="card flex items-center gap-4 rounded-xl transition-colors duration-200 group-hover:bg-surface-2">
-        <span className="grid size-14 shrink-0 overflow-hidden place-items-center rounded-xl border border-line bg-panel">
-          <Image
-            width={100}
-            height={100}
-            src={bankLogoPath(bank.CodigoInstitucion)}
-            alt={`Logo de ${bank.NombreInstitucion}`}
-            className="object-contain"
-          />
-        </span>
+        <BankLogo size="lg" alt={`Logo de ${bank.NombreInstitucion}`}>
+          {bank.CodigoInstitucion}
+        </BankLogo>
         <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
           <h3 className="min-w-0 text-base font-bold uppercase leading-snug text-ink group-hover:text-brand-800">
             {bank.NombreInstitucion}

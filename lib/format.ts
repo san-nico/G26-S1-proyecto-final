@@ -5,10 +5,9 @@ export function bankLogoPath(code: string): string {
   return `/bank-logos/${code}.${ext}`;
 }
 
-export function formatValue(value?: string) {
-  if (!value) return "—";
-  const num = Math.round(Number(value.replace(",", ".")));
-  return Number.isNaN(num) ? value : num.toLocaleString("es-CL");
+export function formatValue(value?: string | number | null): string {
+  if (value === null || value === undefined || value === "") return "—";
+  return formatBillionsWithSuffix(String(value));
 }
 
 export function toNumber(value?: string): number {
@@ -31,7 +30,7 @@ export function formatBillions(value?: string): string {
 
 export function formatBillionsWithSuffix(value?: string): string {
   const formatted = formatBillions(value);
-  return formatted === "—" ? "—" : `${formatted} billones`;
+  return formatted === "—" ? "—" : `${formatted} B`;
 }
 
 export function formatPercent(value: number, base: number): string | null {

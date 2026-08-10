@@ -1,6 +1,5 @@
-import Image from "next/image";
+import BankLogo from "@/components/global/BankLogo";
 import type { AccountCell, AccountTarget } from "@/lib/types";
-import { bankLogoPath } from "@/lib/format";
 
 type BankTableRowProps = {
   code: string;
@@ -25,15 +24,7 @@ export default function BankTableRow({
     >
       <td className="px-4 py-3">
         <span className="flex items-center gap-3">
-          <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg border border-line bg-panel">
-            <Image
-              width={36}
-              height={36}
-              src={bankLogoPath(code)}
-              alt={`Logo de ${bankName}`}
-              className="object-contain"
-            />
-          </span>
+          <BankLogo alt={`Logo de ${bankName}`}>{code}</BankLogo>
           <span className="min-w-0">
             <span className="block font-bold uppercase leading-snug text-ink">
               {bankName}

@@ -1,13 +1,16 @@
 import type {
   AccountDetailResponse,
   AccountsResponse,
+  BalanceAccount,
   Bank,
   CmfAccount,
   FetchPerfilParams,
+  FullBalance,
   PerfilInstitucion,
   PerfilResponseAPI,
 } from "@/lib/types";
 import { ACCOUNTS_BALANCE } from "@/lib/types";
+import { toNumber } from "@/lib/format";
 
 const CMF_BASE_URL = "https://cmf-api-chile.vercel.app/api-sbifv3/recursos_api";
 
@@ -153,6 +156,54 @@ export async function getResultAccounts(
     month,
     accountCodes,
   );
+}
+
+function resolveMonedaTotal(acc: BalanceAccount): string | null {
+  const raw = acc.MonedaTotal;
+  if (raw != null && raw.trim() !== "") return raw;
+
+  const parts = [
+    acc.MonedaChilenaNoReajustable,
+    acc.MonedaReajustablePorIPC,
+    acc.MonedaReajustablePorTipoDeCambio,
+    acc.MonedaExtranjera,
+    acc.MonedaReajustable,
+  ];
+  if (!parts.some((p) => p != null && p.trim() !== "")) return null;
+
+  const total = parts.reduce((sum, p) => sum + (toNumber(p ?? "") || 0), 0);
+  return total.toString();
+}
+
+export async function getFullBalance(
+  code: string,
+  year: string,
+  month: string,
+): Promise<FullBalance> {
+  const apiKey = getApiKey();
+  const url = `${CMF_BASE_URL}/balances/${year}/${month}/instituciones/${code}?apikey=${apiKey}&formato=json`;
+
+  const res = await cmfFetch(url, {
+    headers: { Accept: "application/json" },
+    next: { revalidate: 3600 },
+  });
+
+  const data = await res.json();
+  const rawList = data?.CodigosBalances;
+  const list: BalanceAccount[] = Array.isArray(rawList)
+    ? rawList
+    : [rawList].filter(Boolean);
+
+  const accounts = list.map((acc) => ({
+    ...acc,
+    MonedaTotal: resolveMonedaTotal(acc),
+  }));
+
+  const bankName =
+    accounts.find((acc) => acc?.NombreInstitucion)?.NombreInstitucion?.trim() ||
+    (code === "999" ? "SISTEMA FINANCIERO" : `Institución ${code}`);
+
+  return { bankName, accounts };
 }
 
 async function getAccountDetailByResource(

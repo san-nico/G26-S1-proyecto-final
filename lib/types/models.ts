@@ -23,6 +23,26 @@ export interface AccountCell {
   percent: string;
 }
 
+export interface BalanceAccount {
+  CodigoCuenta: string;
+  DescripcionCuenta: string;
+  CodigoInstitucion: string;
+  NombreInstitucion: string;
+  Anho: string;
+  Mes: string;
+  MonedaChilenaNoReajustable: string | null;
+  MonedaReajustablePorIPC: string | null;
+  MonedaReajustablePorTipoDeCambio: string | null;
+  MonedaExtranjera: string | null;
+  MonedaReajustable: string | null;
+  MonedaTotal: string | null;
+}
+
+export interface FullBalance {
+  bankName: string;
+  accounts: BalanceAccount[];
+}
+
 export interface PerfilInstitucion {
   nombre: string;
   rut: string;
