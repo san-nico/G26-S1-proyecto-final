@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Footer from "@/components/global/Footer";
 import Navbar from "@/components/global/Navbar";
 
@@ -15,7 +16,9 @@ export default function PageLayout({
   return (
     <div className={className}>
       <div className="shrink-0">
-        <Navbar />
+        <Suspense>
+          <Navbar />
+        </Suspense>
       </div>
       <main className={mainClassName}>{children}</main>
       <div className="shrink-0">
