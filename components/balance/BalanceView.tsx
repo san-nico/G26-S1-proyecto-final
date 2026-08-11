@@ -12,15 +12,6 @@ type BalanceViewProps = {
   error: string;
 };
 
-function formatPeriod(year: string, month: string): string {
-  const date = new Date(Number(year), Number(month) - 1, 1);
-  if (Number.isNaN(date.getTime())) return `${year}-${month}`;
-  return date.toLocaleDateString("es-CL", {
-    year: "numeric",
-    month: "long",
-  });
-}
-
 export default function BalanceView({
   bankName,
   code,

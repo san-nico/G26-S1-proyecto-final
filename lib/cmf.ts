@@ -194,10 +194,12 @@ export async function getFullBalance(
     ? rawList
     : [rawList].filter(Boolean);
 
-  const accounts = list.map((acc) => ({
-    ...acc,
-    MonedaTotal: resolveMonedaTotal(acc),
-  }));
+  const accounts = list
+    .map((acc) => ({
+      ...acc,
+      MonedaTotal: resolveMonedaTotal(acc),
+    }))
+    .sort((a, b) => a.CodigoCuenta.localeCompare(b.CodigoCuenta));
 
   const bankName =
     accounts.find((acc) => acc?.NombreInstitucion)?.NombreInstitucion?.trim() ||

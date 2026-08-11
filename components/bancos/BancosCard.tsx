@@ -15,24 +15,36 @@ export default function BancosCard({
   selectedYear,
   selectedMonth,
 }: BancosCardProps) {
-  const comparadorUrl = `/resumen?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
+  const resumenUrl = `/resumen?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
+  const balanceUrl = `/balance?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
 
   return (
-    <Link
-      href={comparadorUrl}
-      target="_blank"
-      className="group block no-underline"
-    >
-      <article className="card flex items-center gap-4 rounded-xl transition-colors duration-200 group-hover:bg-surface-2">
+    <article className="card group flex flex-col gap-3 rounded-xl transition-colors duration-200 group-hover:bg-surface-2">
+      <div className="flex items-center gap-4">
         <BankLogo size="lg" alt={`Logo de ${bank.NombreInstitucion}`}>
           {bank.CodigoInstitucion}
         </BankLogo>
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-          <h3 className="min-w-0 text-base font-bold uppercase leading-snug text-ink group-hover:text-brand-800">
-            {bank.NombreInstitucion}
-          </h3>
-        </div>
-      </article>
-    </Link>
+        <h3 className="min-w-0 text-base font-bold uppercase leading-snug text-ink group-hover:text-brand-800">
+          {bank.NombreInstitucion}
+        </h3>
+      </div>
+
+      <div className="flex gap-2">
+        <Link
+          href={resumenUrl}
+          target="_blank"
+          className="flex-1 rounded-lg border border-line bg-panel py-2 text-center font-medium text-ink no-underline transition-colors duration-200 hover:bg-surface-2"
+        >
+          Resumen
+        </Link>
+        <Link
+          href={balanceUrl}
+          target="_blank"
+          className="flex-1 rounded-lg border border-line bg-panel py-2 text-center font-medium text-ink no-underline transition-colors duration-200 hover:bg-surface-2"
+        >
+          Balance
+        </Link>
+      </div>
+    </article>
   );
 }
