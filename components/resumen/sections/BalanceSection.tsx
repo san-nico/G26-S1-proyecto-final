@@ -1,8 +1,8 @@
 import {
   getAccountDetailByAllInstitutions,
   getAccountsByAllInstitutions,
-} from "@/lib/cmf";
-import { ACCOUNTS_BALANCE } from "@/lib/types";
+} from "@/lib/bancos";
+import { ACCOUNTS_BALANCE } from "@/lib/bancos";
 import { formatValue } from "@/lib/format";
 import SummaryCard from "@/components/global/SummaryCard";
 

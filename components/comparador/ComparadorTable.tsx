@@ -1,12 +1,14 @@
-import type { AccountTarget } from "@/lib/types";
+import type { AccountTarget } from "@/lib/bancos";
 
 type ComparadorTableProps = {
   accounts: AccountTarget[];
+  firstColumnLabel?: string;
   children: React.ReactNode;
 };
 
 export default function ComparadorTable({
   accounts,
+  firstColumnLabel = "Institución",
   children,
 }: ComparadorTableProps) {
   return (
@@ -15,7 +17,7 @@ export default function ComparadorTable({
         <thead>
           <tr className="border-b border-line bg-surface-1">
             <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-muted">
-              Institución
+              {firstColumnLabel}
             </th>
             {accounts.map((item) => (
               <th

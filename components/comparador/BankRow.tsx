@@ -1,5 +1,5 @@
-import { getBalanceAccounts } from "@/lib/cmf";
-import type { AccountTarget } from "@/lib/types";
+import { getBalanceAccounts } from "@/lib/bancos";
+import type { AccountTarget } from "@/lib/bancos";
 import { buildAccountCell, toNumber } from "@/lib/format";
 import BankTableRow from "./BankTableRow";
 

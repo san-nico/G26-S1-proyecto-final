@@ -1,29 +1,109 @@
+/**
+ * Consultas de la CMF (bancos) específicas de esta aplicación.
+ * Construye sobre el cliente genérico `@/lib/cmf-bancos`.
+ */
+
 import type {
-  AccountDetailResponse,
-  AccountsResponse,
   BalanceAccount,
-  Bank,
   CmfAccount,
+  CMFConfig,
   FetchPerfilParams,
-  FullBalance,
-  PerfilInstitucion,
+  Perfil,
   PerfilResponseAPI,
-} from "@/lib/types";
-import { ACCOUNTS_BALANCE } from "@/lib/types";
+} from "@/lib/cmf-bancos";
+import { cmfRequest } from "@/lib/cmf-bancos";
 import { toNumber } from "@/lib/format";
 
-const CMF_BASE_URL = "https://cmf-api-chile.vercel.app/api-sbifv3/recursos_api";
-
-async function cmfFetch(url: string, init?: RequestInit): Promise<Response> {
-  console.log(`[CMF] GET ${url}`);
-  const res = await fetch(url, init);
-  if (!res.ok) {
-    throw new Error(
-      `CMF API error: ${res.status} ${res.statusText} for URL: ${url}`,
-    );
-  }
-  return res;
+export interface Bank {
+  CodigoInstitucion: string;
+  NombreInstitucion: string;
 }
+
+export interface AccountsResponse {
+  bankName: string;
+  accounts: Record<string, string>;
+}
+
+export interface AccountDetailEntry {
+  bankName: string;
+  value: string;
+}
+
+export interface AccountDetailResponse {
+  accountName: string;
+  institutions: Record<string, AccountDetailEntry>;
+}
+
+export interface AccountCell {
+  money: string;
+  percent: string;
+}
+
+export interface FullBalance {
+  bankName: string;
+  accounts: BalanceAccount[];
+}
+
+export type PerfilInstitucion = Perfil & {
+  codigoInstitucion: string;
+  fechaFormateada: string;
+};
+
+export interface AccountTarget {
+  code: string;
+  category: string;
+  title: string;
+  cardClass: string;
+  textClass: string;
+}
+
+export const ACCOUNTS_BALANCE: AccountTarget[] = [
+  {
+    code: "100000000",
+    category: "Activo",
+    title: "Activo Total",
+    cardClass: "border-income-200 bg-income-50/60",
+    textClass: "text-income-700",
+  },
+  {
+    code: "200000000",
+    category: "Pasivo",
+    title: "Pasivo Total",
+    cardClass: "border-alert-border bg-[#fef3c7]/60",
+    textClass: "text-[#b45309]",
+  },
+  {
+    code: "300000000",
+    category: "Patrimonio",
+    title: "Patrimonio Total",
+    cardClass: "border-result-200 bg-result-50/60",
+    textClass: "text-result-700",
+  },
+];
+
+export const ACCOUNTS_RESULTADO: AccountTarget[] = [
+  {
+    code: "550000000",
+    category: "Ingresos",
+    title: "Ingresos operacionales",
+    cardClass: "border-income-200 bg-income-50",
+    textClass: "text-income-700",
+  },
+  {
+    code: "560000000",
+    category: "Gastos",
+    title: "Gastos operacionales",
+    cardClass: "border-expense-200 bg-expense-50",
+    textClass: "text-expense-700",
+  },
+  {
+    code: "590000000",
+    category: "Resultado",
+    title: "Resultado del período",
+    cardClass: "border-result-200 bg-result-50",
+    textClass: "text-result-700",
+  },
+];
 
 function getApiKey(): string {
   const apiKey = process.env.CMF_API_KEY;
@@ -43,8 +123,43 @@ function getCurrentYearMonth(): { year: string; month: string } {
   };
 }
 
+/** MM-pad a month string for URI segments. */
+function mm(month: string): string {
+  return month.padStart(2, "0");
+}
+
+let cachedConfig: CMFConfig | null = null;
+let cachedPerfilConfig: CMFConfig | null = null;
+
+function getConfig(): CMFConfig {
+  if (!cachedConfig) {
+    cachedConfig = {
+      apikey: getApiKey(),
+      fetch: (url) =>
+        fetch(url, {
+          headers: { Accept: "application/json" },
+          next: { revalidate: 3600 },
+        }),
+    };
+  }
+  return cachedConfig;
+}
+
+function getPerfilConfig(): CMFConfig {
+  if (!cachedPerfilConfig) {
+    cachedPerfilConfig = {
+      apikey: getApiKey(),
+      fetch: (url) =>
+        fetch(url, {
+          cache: "no-store",
+          headers: { "User-Agent": "Mozilla/5.0" },
+        }),
+    };
+  }
+  return cachedPerfilConfig;
+}
+
 export async function getBanks(year?: string, month?: string): Promise<Bank[]> {
-  getApiKey();
   const { year: defaultYear, month: defaultMonth } = getCurrentYearMonth();
   const selectedYear = year || defaultYear;
   const selectedMonth = month || defaultMonth;
@@ -180,19 +295,16 @@ export async function getFullBalance(
   year: string,
   month: string,
 ): Promise<FullBalance> {
-  const apiKey = getApiKey();
-  const url = `${CMF_BASE_URL}/balances/${year}/${month}/instituciones/${code}?apikey=${apiKey}&formato=json`;
-
-  const res = await cmfFetch(url, {
-    headers: { Accept: "application/json" },
-    next: { revalidate: 3600 },
-  });
-
-  const data = await res.json();
+  const data = (await cmfRequest(
+    getConfig(),
+    `/balances/${year}/${mm(month)}/instituciones/${code}`,
+  )) as { CodigosBalances?: BalanceAccount | BalanceAccount[] };
   const rawList = data?.CodigosBalances;
   const list: BalanceAccount[] = Array.isArray(rawList)
     ? rawList
-    : [rawList].filter(Boolean);
+    : rawList
+      ? [rawList]
+      : [];
 
   const accounts = list
     .map((acc) => ({
@@ -215,19 +327,16 @@ async function getAccountDetailByResource(
   year: string,
   month: string,
 ): Promise<AccountDetailResponse> {
-  const apiKey = getApiKey();
-  const url = `${CMF_BASE_URL}/${resource}/${year}/${month}/cuentas/${accountCode}?apikey=${apiKey}&formato=json`;
-
-  const res = await cmfFetch(url, {
-    headers: { Accept: "application/json" },
-    next: { revalidate: 3600 },
-  });
-
-  const data = await res.json();
+  const data = (await cmfRequest(
+    getConfig(),
+    `/${resource}/${year}/${mm(month)}/cuentas/${accountCode}`,
+  )) as Record<string, unknown>;
   const rawList = data?.[listKey];
   const list: CmfAccount[] = Array.isArray(rawList)
     ? rawList
-    : [rawList].filter(Boolean);
+    : rawList
+      ? [rawList as CmfAccount]
+      : [];
 
   const institutions: AccountDetailResponse["institutions"] = {};
   let accountName = "";
@@ -321,30 +430,23 @@ export async function getPerfilInstitucion({
   year,
   month,
 }: FetchPerfilParams): Promise<PerfilInstitucion> {
-  const apiKey = getApiKey();
   const { year: defaultYear, month: defaultMonth } = getCurrentYearMonth();
   const institucionYear = year || defaultYear;
   const institucionMonth = month || defaultMonth;
 
-  const apiUrl = `${CMF_BASE_URL}/perfil/instituciones/${codigo}/${institucionYear}/${institucionMonth}?apikey=${apiKey}&formato=json`;
-
-  const res = await cmfFetch(apiUrl, {
-    cache: "no-store",
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-    },
-  });
-
-  const data: PerfilResponseAPI = await res.json();
-  const perfil = data?.Perfiles?.[0]?.Perfil;
+  const data = (await cmfRequest(
+    getPerfilConfig(),
+    `/perfil/instituciones/${codigo ?? ""}/${institucionYear}/${mm(institucionMonth)}`,
+  )) as PerfilResponseAPI;
+  const perfilData = data?.Perfiles?.[0]?.Perfil;
   const institucion = data?.Perfiles?.[0]?.Institucion;
 
-  if (!perfil) {
+  if (!perfilData) {
     throw new Error("No se encontró el perfil en la respuesta de la CMF.");
   }
 
-  const fechaFormateada = perfil.fechaPublicacion
-    ? new Date(perfil.fechaPublicacion).toLocaleDateString("es-CL", {
+  const fechaFormateada = perfilData.fechaPublicacion
+    ? new Date(perfilData.fechaPublicacion).toLocaleDateString("es-CL", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -352,23 +454,7 @@ export async function getPerfilInstitucion({
     : "No disponible";
 
   return {
-    nombre: perfil.nombre,
-    rut: perfil.rut,
-    codigoSWIFT: perfil.codigoSWIFT,
-    direccionWeb: perfil.direccionWeb,
-    telefono: perfil.telefono,
-    direccionPrincipal: perfil.direccionPrincipal?.trim(),
-    contactoPublico: perfil.contactoPublico,
-    telefonoPublico: perfil.telefonoPublico,
-    direccionPublico: perfil.direccionPublico,
-    sucursales: perfil.sucursales ?? 0,
-    oficinas: perfil.oficinas ?? 0,
-    cajeros: perfil.cajeros ?? 0,
-    empleados: perfil.empleados ?? 0,
-    empHombresPerm: perfil.emp_hombres_perm ?? 0,
-    empMujeresPerm: perfil.emp_mujereres_perm ?? 0,
-    empHombresExt: perfil.emp_hombres_ext ?? 0,
-    empMujeresExt: perfil.emp_mujeres_ext ?? 0,
+    ...perfilData,
     codigoInstitucion: institucion?.CodigoInstitucion?.trim() || "",
     fechaFormateada,
   };

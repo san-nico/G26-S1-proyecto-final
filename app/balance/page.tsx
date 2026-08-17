@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import BalanceView from "@/components/balance/BalanceView";
-import { getFullBalance } from "@/lib/cmf";
-import type { BalanceAccount } from "@/lib/types";
+import { getFullBalance } from "@/lib/bancos";
+import type { BalanceAccount } from "@/lib/cmf-bancos";
 import { toNumber } from "@/lib/format";
 import { resolvePeriodParams } from "@/lib/params";
 

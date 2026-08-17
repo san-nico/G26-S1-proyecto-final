@@ -17,6 +17,7 @@ export default function BancosCard({
 }: BancosCardProps) {
   const resumenUrl = `/resumen?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
   const balanceUrl = `/balance?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
+  const historialUrl = `/historial?codigo=${bank.CodigoInstitucion}&year=${selectedYear}&month=${selectedMonth.padStart(2, "0")}`;
 
   return (
     <article className="card group flex flex-col gap-3 rounded-xl transition-colors duration-200 group-hover:bg-surface-2">
@@ -29,7 +30,7 @@ export default function BancosCard({
         </h3>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Link
           href={resumenUrl}
           target="_blank"
@@ -43,6 +44,13 @@ export default function BancosCard({
           className="flex-1 rounded-lg border border-line bg-panel py-2 text-center font-medium text-ink no-underline transition-colors duration-200 hover:bg-surface-2"
         >
           Balance
+        </Link>
+        <Link
+          href={historialUrl}
+          target="_blank"
+          className="flex-1 rounded-lg border border-line bg-panel py-2 text-center font-medium text-ink no-underline transition-colors duration-200 hover:bg-surface-2"
+        >
+          Historial
         </Link>
       </div>
     </article>

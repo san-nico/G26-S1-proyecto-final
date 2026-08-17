@@ -1,5 +1,5 @@
-import { getResultAccounts } from "@/lib/cmf";
-import { ACCOUNTS_RESULTADO } from "@/lib/types";
+import { getResultAccounts } from "@/lib/bancos";
+import { ACCOUNTS_RESULTADO } from "@/lib/bancos";
 import { formatValue } from "@/lib/format";
 import SummaryCard from "@/components/global/SummaryCard";
 

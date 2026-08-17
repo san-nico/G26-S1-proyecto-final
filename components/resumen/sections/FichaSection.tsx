@@ -1,5 +1,5 @@
-import { getPerfilInstitucion } from "@/lib/cmf";
-import type { PerfilInstitucion } from "@/lib/types";
+import { getPerfilInstitucion } from "@/lib/bancos";
+import type { PerfilInstitucion } from "@/lib/bancos";
 
 type FichaSectionProps = {
   code: string;
@@ -117,19 +117,19 @@ export default async function FichaSection({
               <dl className="grid grid-cols-1 gap-1.5 text-xs sm:text-sm">
                 <InfoRow
                   label="Hombres permanentes"
-                  value={perfil.empHombresPerm.toString()}
+                  value={perfil.emp_hombres_perm.toString()}
                 />
                 <InfoRow
                   label="Mujeres permanentes"
-                  value={perfil.empMujeresPerm.toString()}
+                  value={perfil.emp_mujereres_perm.toString()}
                 />
                 <InfoRow
                   label="Hombres externos"
-                  value={perfil.empHombresExt.toString()}
+                  value={perfil.emp_hombres_ext.toString()}
                 />
                 <InfoRow
                   label="Mujeres externas"
-                  value={perfil.empMujeresExt.toString()}
+                  value={perfil.emp_mujeres_ext.toString()}
                 />
               </dl>
             </section>

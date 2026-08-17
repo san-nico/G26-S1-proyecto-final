@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import ComparadorView from "@/components/comparador/ComparadorView";
-import { getAccountsByAllInstitutions, getBanks } from "@/lib/cmf";
-import { ACCOUNTS_BALANCE } from "@/lib/types";
-import type { Bank } from "@/lib/types";
+import { getAccountsByAllInstitutions, getBanks } from "@/lib/bancos";
+import { ACCOUNTS_BALANCE } from "@/lib/bancos";
+import type { Bank } from "@/lib/bancos";
 import { buildAccountCell, toNumber } from "@/lib/format";
 import { resolvePeriodParams } from "@/lib/params";
 

@@ -15,8 +15,9 @@ export function resolvePeriodParams(
   fallbackCode = "999",
 ): PeriodParams {
   const now = new Date();
-  const first = (value?: string | string[]) =>
-    Array.isArray(value) ? value[0] : value;
+  function first(value?: string | string[]): string | undefined {
+    return Array.isArray(value) ? value[0] : value;
+  }
 
   return {
     code: first(searchParams.codigo)?.trim() || fallbackCode,

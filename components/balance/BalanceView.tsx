@@ -1,5 +1,5 @@
 import PageLayout from "@/components/global/PageLayout";
-import type { BalanceAccount } from "@/lib/types";
+import type { BalanceAccount } from "@/lib/cmf-bancos";
 import { formatValue } from "@/lib/format";
 import BankLogo from "../global/BankLogo";
 

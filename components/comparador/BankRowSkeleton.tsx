@@ -1,4 +1,4 @@
-import type { AccountTarget } from "@/lib/types";
+import type { AccountTarget } from "@/lib/bancos";
 
 type BankRowSkeletonProps = {
   code: string;

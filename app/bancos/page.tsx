@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import BancosView from "@/components/bancos/BancosView";
 import PageLayout from "@/components/global/PageLayout";
-import { getBanks } from "@/lib/cmf";
-import type { Bank } from "@/lib/types";
+import { getBanks } from "@/lib/bancos";
+import type { Bank } from "@/lib/bancos";
 import { resolvePeriodParams } from "@/lib/params";
 
 export const metadata: Metadata = {
