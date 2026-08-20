@@ -135,7 +135,9 @@ export async function cmfRequest<T = CmfResponse>(
             "cmfRequest: no hay `fetch` global disponible (Node < 18). Pasa una implementación en `fetch`.",
           );
         });
-  const res = await fetcher(cmfUrl(config, path, formato));
+  const url = cmfUrl(config, path, formato);
+  console.log(`[CMF] GET ${url}`);
+  const res = await fetcher(url);
   const text = await res.text();
   if (!res.ok) {
     throw new CMFError(`CMFError: HTTP ${res.status} en ${path}`, res.status, text);
