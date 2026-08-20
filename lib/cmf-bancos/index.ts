@@ -104,6 +104,7 @@ export class CMFError extends Error {
 }
 
 const DEFAULT_BASE_URL = API_BASE_URL;
+const ORIGIN_BASE_URL = "https://api.cmfchile.cl/api-sbifv3/recursos_api";
 
 /**
  * Build a full URL for an API path, appending apikey/formato/callback.
@@ -137,19 +138,40 @@ export async function cmfRequest<T = CmfResponse>(
             "cmfRequest: no hay `fetch` global disponible (Node < 18). Pasa una implementación en `fetch`.",
           );
         });
-  const url = cmfUrl(config, path, formato);
-  console.log(`[CMF] GET ${url}`);
-  const res = await fetcher(url);
-  const text = await res.text();
-  if (!res.ok) {
-    throw new CMFError(`CMFError: HTTP ${res.status} en ${path}`, res.status, text);
-  }
-  if ((formato ?? config.formato ?? "json").toLowerCase() === "json") {
-    try {
-      return JSON.parse(text) as T;
-    } catch {
-      throw new CMFError("cmfRequest: la respuesta no es JSON válido.", res.status, text);
+  const primaryBase = config.baseUrl ?? DEFAULT_BASE_URL;
+  const fallbackBase = ORIGIN_BASE_URL;
+
+  const attempt = async (base: string): Promise<T> => {
+    const url = cmfUrl({ ...config, baseUrl: base }, path, formato);
+    console.log(`[CMF] GET ${url}`);
+    const res = await fetcher(url);
+    const text = await res.text();
+    if (!res.ok) {
+      throw new CMFError(
+        `CMFError: HTTP ${res.status} en ${path}`,
+        res.status,
+        text,
+      );
     }
+    if ((formato ?? config.formato ?? "json").toLowerCase() === "json") {
+      try {
+        return JSON.parse(text) as T;
+      } catch {
+        throw new CMFError(
+          "cmfRequest: la respuesta no es JSON válido.",
+          res.status,
+          text,
+        );
+      }
+    }
+    return text as unknown as T;
+  };
+
+  try {
+    return await attempt(primaryBase);
+  } catch (primaryError) {
+    if (fallbackBase === primaryBase) throw primaryError;
+    console.warn(`[CMF] ${primaryBase} falló, reintentando en ${fallbackBase}`);
+    return attempt(fallbackBase);
   }
-  return text as unknown as T;
 }
