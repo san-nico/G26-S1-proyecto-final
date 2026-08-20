@@ -5,37 +5,31 @@ vi.mock("@/lib/app", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/app")>();
   return {
     ...actual,
-    getFullBalance: vi.fn(),
+    getHistorialPageData: vi.fn(),
   };
 });
 
 import HistorialPage from "@/app/historial/page";
-import { getFullBalance } from "@/lib/app";
+import { getHistorialPageData } from "@/lib/app";
 
-const mockedGetFullBalance = vi.mocked(getFullBalance);
+const mockedGetHistorialPageData = vi.mocked(getHistorialPageData);
 
 beforeEach(() => {
-  mockedGetFullBalance.mockReset();
+  mockedGetHistorialPageData.mockReset();
 });
 
 describe("historial route", () => {
   it("renders the bank name in the heading", async () => {
-    mockedGetFullBalance.mockResolvedValue({
+    mockedGetHistorialPageData.mockResolvedValue({
       bankName: "Banco de Chile",
-      accounts: [
+      rows: [
         {
-          CodigoCuenta: "100000000",
-          DescripcionCuenta: "Activo Total",
-          CodigoInstitucion: "001",
-          NombreInstitucion: "Banco de Chile",
-          Anho: "2026",
-          Mes: "06",
-          MonedaChilenaNoReajustable: null,
-          MonedaReajustablePorIPC: null,
-          MonedaReajustablePorTipoDeCambio: null,
-          MonedaExtranjera: null,
-          MonedaReajustable: null,
-          MonedaTotal: "1000000000",
+          year: 2026,
+          cells: {
+            "100000000": { money: "1,00 B", percent: "100%" },
+            "200000000": { money: "0,60 B", percent: "60%" },
+            "300000000": { money: "0,40 B", percent: "40%" },
+          },
         },
       ],
     });
@@ -52,7 +46,7 @@ describe("historial route", () => {
   });
 
   it("shows a fallback message when no data is available", async () => {
-    mockedGetFullBalance.mockRejectedValue(new Error("boom"));
+    mockedGetHistorialPageData.mockResolvedValue({ bankName: "", rows: [] });
 
     render(
       await HistorialPage({

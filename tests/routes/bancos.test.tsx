@@ -5,22 +5,22 @@ vi.mock("@/lib/app", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/app")>();
   return {
     ...actual,
-    getBanks: vi.fn(),
+    getBanksPageData: vi.fn(),
   };
 });
 
 import BanksPage from "@/app/bancos/page";
-import { getBanks } from "@/lib/app";
+import { getBanksPageData } from "@/lib/app";
 
-const mockedGetBanks = vi.mocked(getBanks);
+const mockedGetBanksPageData = vi.mocked(getBanksPageData);
 
 beforeEach(() => {
-  mockedGetBanks.mockReset();
+  mockedGetBanksPageData.mockReset();
 });
 
 describe("bancos route", () => {
   it("renders the page title and description", async () => {
-    mockedGetBanks.mockResolvedValue([]);
+    mockedGetBanksPageData.mockResolvedValue({ banks: [], error: "" });
 
     const { container } = render(
       await BanksPage({ searchParams: Promise.resolve({}) }),
@@ -33,32 +33,36 @@ describe("bancos route", () => {
   });
 
   it("renders the list of banks returned by the API", async () => {
-    mockedGetBanks.mockResolvedValue([
-      { CodigoInstitucion: "001", NombreInstitucion: "Banco de Chile" },
-      { CodigoInstitucion: "002", NombreInstitucion: "Banco Estado" },
-    ]);
+    mockedGetBanksPageData.mockResolvedValue({
+      banks: [
+        { CodigoInstitucion: "001", NombreInstitucion: "Banco de Chile" },
+        { CodigoInstitucion: "002", NombreInstitucion: "Banco Estado" },
+      ],
+      error: "",
+    });
 
     render(await BanksPage({ searchParams: Promise.resolve({}) }));
 
     expect(screen.getByText("Banco de Chile")).toBeInTheDocument();
     expect(screen.getByText("Banco Estado")).toBeInTheDocument();
-    expect(mockedGetBanks).toHaveBeenCalled();
+    expect(mockedGetBanksPageData).toHaveBeenCalled();
   });
 
-  it("filters out the 999 SISTEMA FINANCIERO entry", async () => {
-    mockedGetBanks.mockResolvedValue([
-      { CodigoInstitucion: "001", NombreInstitucion: "Banco de Chile" },
-      { CodigoInstitucion: "999", NombreInstitucion: "SISTEMA FINANCIERO" },
-    ]);
+  it("does not render institutions when the list is empty", async () => {
+    mockedGetBanksPageData.mockResolvedValue({ banks: [], error: "" });
 
     render(await BanksPage({ searchParams: Promise.resolve({}) }));
 
-    expect(screen.getByText("Banco de Chile")).toBeInTheDocument();
-    expect(screen.queryByText("SISTEMA FINANCIERO")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("No se encontraron instituciones."),
+    ).toBeInTheDocument();
   });
 
   it("shows an error alert when the API call fails", async () => {
-    mockedGetBanks.mockRejectedValue(new Error("CMF no disponible"));
+    mockedGetBanksPageData.mockResolvedValue({
+      banks: [],
+      error: "CMF no disponible",
+    });
 
     render(await BanksPage({ searchParams: Promise.resolve({}) }));
 

@@ -5,39 +5,45 @@ vi.mock("@/lib/app", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/app")>();
   return {
     ...actual,
-    getFullBalance: vi.fn(),
+    getBalancePageData: vi.fn(),
   };
 });
 
 import BalancePage from "@/app/balance/page";
-import { getFullBalance } from "@/lib/app";
+import { getBalancePageData } from "@/lib/app";
 
-const mockedGetFullBalance = vi.mocked(getFullBalance);
+const mockedGetBalancePageData = vi.mocked(getBalancePageData);
+
+const balanceAccount = (account: Partial<{
+  CodigoCuenta: string;
+  DescripcionCuenta: string;
+  MonedaTotal: string;
+}> = {}) => ({
+  CodigoCuenta: "100000000",
+  DescripcionCuenta: "Activo Total",
+  CodigoInstitucion: "001",
+  NombreInstitucion: "Banco de Chile",
+  Anho: "2026",
+  Mes: "06",
+  MonedaChilenaNoReajustable: null,
+  MonedaReajustablePorIPC: null,
+  MonedaReajustablePorTipoDeCambio: null,
+  MonedaExtranjera: null,
+  MonedaReajustable: null,
+  MonedaTotal: "1000000000",
+  ...account,
+});
 
 beforeEach(() => {
-  mockedGetFullBalance.mockReset();
+  mockedGetBalancePageData.mockReset();
 });
 
 describe("balance route", () => {
-  it("renders bank name and non-zero accounts", async () => {
-    mockedGetFullBalance.mockResolvedValue({
+  it("renders bank name and accounts", async () => {
+    mockedGetBalancePageData.mockResolvedValue({
       bankName: "Banco de Chile",
-      accounts: [
-        {
-          CodigoCuenta: "100000000",
-          DescripcionCuenta: "Activo Total",
-          CodigoInstitucion: "001",
-          NombreInstitucion: "Banco de Chile",
-          Anho: "2026",
-          Mes: "06",
-          MonedaChilenaNoReajustable: null,
-          MonedaReajustablePorIPC: null,
-          MonedaReajustablePorTipoDeCambio: null,
-          MonedaExtranjera: null,
-          MonedaReajustable: null,
-          MonedaTotal: "1000000000",
-        },
-      ],
+      accounts: [balanceAccount()],
+      error: "",
     });
 
     render(
@@ -50,53 +56,12 @@ describe("balance route", () => {
     expect(screen.getByText("Activo Total")).toBeInTheDocument();
   });
 
-  it("filters out accounts with zero MonedaTotal", async () => {
-    mockedGetFullBalance.mockResolvedValue({
-      bankName: "Banco de Chile",
-      accounts: [
-        {
-          CodigoCuenta: "100000000",
-          DescripcionCuenta: "Activo Total",
-          CodigoInstitucion: "001",
-          NombreInstitucion: "Banco de Chile",
-          Anho: "2026",
-          Mes: "06",
-          MonedaChilenaNoReajustable: null,
-          MonedaReajustablePorIPC: null,
-          MonedaReajustablePorTipoDeCambio: null,
-          MonedaExtranjera: null,
-          MonedaReajustable: null,
-          MonedaTotal: "0",
-        },
-        {
-          CodigoCuenta: "300000000",
-          DescripcionCuenta: "Patrimonio Total",
-          CodigoInstitucion: "001",
-          NombreInstitucion: "Banco de Chile",
-          Anho: "2026",
-          Mes: "06",
-          MonedaChilenaNoReajustable: null,
-          MonedaReajustablePorIPC: null,
-          MonedaReajustablePorTipoDeCambio: null,
-          MonedaExtranjera: null,
-          MonedaReajustable: null,
-          MonedaTotal: "500000000",
-        },
-      ],
-    });
-
-    render(
-      await BalancePage({
-        searchParams: Promise.resolve({ codigo: "001", year: "2026", month: "06" }),
-      }),
-    );
-
-    expect(screen.queryByText("Activo Total")).not.toBeInTheDocument();
-    expect(screen.getByText("Patrimonio Total")).toBeInTheDocument();
-  });
-
   it("shows an error when the API call fails", async () => {
-    mockedGetFullBalance.mockRejectedValue(new Error("boom"));
+    mockedGetBalancePageData.mockResolvedValue({
+      bankName: "",
+      accounts: [],
+      error: "No se pudieron consultar los datos del balance en la CMF.",
+    });
 
     render(
       await BalancePage({

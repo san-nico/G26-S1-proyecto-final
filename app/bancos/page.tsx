@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import BancosView from "@/components/bancos/BancosView";
 import PageLayout from "@/components/global/PageLayout";
-import { getBanks } from "@/lib/app";
-import type { Bank } from "@/lib/app";
-import { resolvePeriodParams } from "@/lib/app";
+import { getBanksPageData, resolvePeriodParams } from "@/lib/app";
 
 export const metadata: Metadata = {
   title: "Instituciones bancarias | CMF Chile",
@@ -19,29 +17,16 @@ export default async function BanksPage({
     month?: string | string[];
   }>;
 }) {
-  const params = await searchParams;
-  const { year, month } = resolvePeriodParams(params);
-
-  let banks: Bank[] = [];
-  let error = "";
-
-  try {
-    banks = await getBanks(year, month);
-    banks = banks.filter((bank) => bank.CodigoInstitucion !== "999");
-  } catch (err) {
-    error = err instanceof Error ? err.message : "Error al cargar los bancos.";
-  }
-
-  const selectedYear = year;
-  const selectedMonth = month;
+  const { year, month } = resolvePeriodParams(await searchParams);
+  const { banks, error } = await getBanksPageData(year, month);
 
   return (
     <PageLayout>
       <BancosView
         banks={banks}
         error={error}
-        selectedYear={selectedYear}
-        selectedMonth={selectedMonth}
+        selectedYear={year}
+        selectedMonth={month}
       />
     </PageLayout>
   );

@@ -16,6 +16,7 @@ import { toNumber } from "./format";
 
 export * from "./format";
 export * from "./params";
+export * from "./pages";
 
 export interface Bank {
   CodigoInstitucion: string;
