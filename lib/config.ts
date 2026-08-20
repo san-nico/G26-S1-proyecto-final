@@ -1,2 +1,3 @@
 /** Base URL for all CMF API calls. */
-export const API_BASE_URL = "https://cmf-api-two.vercel.app";
+export const API_BASE_URL =
+  "https://cmf-api-two.vercel.app/api-sbifv3/recursos_api";
