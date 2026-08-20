@@ -7,6 +7,8 @@
  * config to switch. Requires a CMF API key (https://api.cmfchile.cl).
  */
 
+import { API_BASE_URL } from "@/lib/config";
+
 export type Formato = "json" | "xml" | "JSON" | "XML";
 
 /** Loose response type: payload shape varies per report. */
@@ -101,7 +103,7 @@ export class CMFError extends Error {
   }
 }
 
-const DEFAULT_BASE_URL = "https://api.cmfchile.cl/api-sbifv3/recursos_api";
+const DEFAULT_BASE_URL = API_BASE_URL;
 
 /**
  * Build a full URL for an API path, appending apikey/formato/callback.
