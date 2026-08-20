@@ -1,4 +1,4 @@
-import type { AccountCell } from "@/lib/bancos";
+import type { AccountCell } from "./index";
 
 export function bankLogoPath(code: string): string {
   const ext = code === "999" ? "svg" : "png";

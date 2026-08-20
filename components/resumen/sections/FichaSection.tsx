@@ -1,5 +1,5 @@
-import { getPerfilInstitucion } from "@/lib/bancos";
-import type { PerfilInstitucion } from "@/lib/bancos";
+import { getPerfilInstitucion } from "@/lib/app";
+import type { PerfilInstitucion } from "@/lib/app";
 
 type FichaSectionProps = {
   code: string;

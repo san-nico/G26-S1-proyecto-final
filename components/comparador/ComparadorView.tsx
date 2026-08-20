@@ -2,7 +2,7 @@ import PageLayout from "@/components/global/PageLayout";
 import ComparadorHeader from "@/components/comparador/ComparadorHeader";
 import ComparadorTable from "@/components/comparador/ComparadorTable";
 import BankTableRow from "@/components/comparador/BankTableRow";
-import type { AccountCell, AccountTarget, Bank } from "@/lib/bancos";
+import type { AccountCell, AccountTarget, Bank } from "@/lib/app";
 
 type BankRow = {
   code: string;

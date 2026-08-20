@@ -1,36 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/lib/bancos", () => ({
-  getBanks: vi.fn(),
-  getAccountsByAllInstitutions: vi.fn(),
-  ACCOUNTS_BALANCE: [
-    {
-      code: "100000000",
-      category: "Activo",
-      title: "Activo Total",
-      cardClass: "",
-      textClass: "",
-    },
-    {
-      code: "200000000",
-      category: "Pasivo",
-      title: "Pasivo Total",
-      cardClass: "",
-      textClass: "",
-    },
-    {
-      code: "300000000",
-      category: "Patrimonio",
-      title: "Patrimonio Total",
-      cardClass: "",
-      textClass: "",
-    },
-  ],
-}));
+vi.mock("@/lib/app", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/app")>();
+  return {
+    ...actual,
+    getBanks: vi.fn(),
+    getAccountsByAllInstitutions: vi.fn(),
+  };
+});
 
 import ComparadorPage from "@/app/comparador/page";
-import { getAccountsByAllInstitutions, getBanks } from "@/lib/bancos";
+import { getAccountsByAllInstitutions, getBanks } from "@/lib/app";
 
 const mockedGetBanks = vi.mocked(getBanks);
 const mockedGetAccounts = vi.mocked(getAccountsByAllInstitutions);

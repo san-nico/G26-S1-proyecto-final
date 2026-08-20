@@ -1,6 +1,6 @@
-import { getBalanceAccounts } from "@/lib/bancos";
-import type { AccountTarget } from "@/lib/bancos";
-import { buildAccountCell, toNumber } from "@/lib/format";
+import { getBalanceAccounts } from "@/lib/app";
+import type { AccountTarget } from "@/lib/app";
+import { buildAccountCell, toNumber } from "@/lib/app";
 import BankTableRow from "./BankTableRow";
 
 type BankRowProps = {

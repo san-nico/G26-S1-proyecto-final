@@ -1,12 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/lib/bancos", () => ({
-  getBanks: vi.fn(),
-}));
+vi.mock("@/lib/app", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/app")>();
+  return {
+    ...actual,
+    getBanks: vi.fn(),
+  };
+});
 
 import BanksPage from "@/app/bancos/page";
-import { getBanks } from "@/lib/bancos";
+import { getBanks } from "@/lib/app";
 
 const mockedGetBanks = vi.mocked(getBanks);
 

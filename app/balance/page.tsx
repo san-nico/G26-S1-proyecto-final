@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import BalanceView from "@/components/balance/BalanceView";
-import { getFullBalance } from "@/lib/bancos";
+import { getFullBalance } from "@/lib/app";
 import type { BalanceAccount } from "@/lib/cmf-bancos";
-import { toNumber } from "@/lib/format";
-import { resolvePeriodParams } from "@/lib/params";
+import { toNumber, resolvePeriodParams } from "@/lib/app";
 
 export const metadata: Metadata = {
   title: "Balance de la Institución | CMF Chile",

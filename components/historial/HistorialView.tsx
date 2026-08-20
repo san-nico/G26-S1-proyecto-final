@@ -1,6 +1,6 @@
 import PageLayout from "@/components/global/PageLayout";
 import ComparadorTable from "@/components/comparador/ComparadorTable";
-import type { AccountCell, AccountTarget } from "@/lib/bancos";
+import type { AccountCell, AccountTarget } from "@/lib/app";
 
 type YearRow = {
   year: number;

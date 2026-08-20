@@ -1,21 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/lib/bancos", () => ({
-  getFullBalance: vi.fn(),
-  ACCOUNTS_BALANCE: [
-    {
-      code: "100000000",
-      category: "Activo",
-      title: "Activo Total",
-      cardClass: "",
-      textClass: "",
-    },
-  ],
-}));
+vi.mock("@/lib/app", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/app")>();
+  return {
+    ...actual,
+    getFullBalance: vi.fn(),
+  };
+});
 
 import HistorialPage from "@/app/historial/page";
-import { getFullBalance } from "@/lib/bancos";
+import { getFullBalance } from "@/lib/app";
 
 const mockedGetFullBalance = vi.mocked(getFullBalance);
 

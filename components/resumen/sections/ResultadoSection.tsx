@@ -1,6 +1,6 @@
-import { getResultAccounts } from "@/lib/bancos";
-import { ACCOUNTS_RESULTADO } from "@/lib/bancos";
-import { formatValue } from "@/lib/format";
+import { getResultAccounts } from "@/lib/app";
+import { ACCOUNTS_RESULTADO } from "@/lib/app";
+import { formatValue } from "@/lib/app";
 import SummaryCard from "@/components/global/SummaryCard";
 
 type ResultadoSectionProps = {

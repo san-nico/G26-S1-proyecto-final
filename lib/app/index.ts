@@ -12,7 +12,10 @@ import type {
   PerfilResponseAPI,
 } from "@/lib/cmf-bancos";
 import { cmfRequest } from "@/lib/cmf-bancos";
-import { toNumber } from "@/lib/format";
+import { toNumber } from "./format";
+
+export * from "./format";
+export * from "./params";
 
 export interface Bank {
   CodigoInstitucion: string;

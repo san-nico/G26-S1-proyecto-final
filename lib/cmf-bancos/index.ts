@@ -7,7 +7,9 @@
  * config to switch. Requires a CMF API key (https://api.cmfchile.cl).
  */
 
-import { API_BASE_URL } from "@/lib/config";
+import { API_BASE_URL } from "./config";
+
+export { API_BASE_URL } from "./config";
 
 export type Formato = "json" | "xml" | "JSON" | "XML";
 

@@ -5,7 +5,7 @@ import SectionSkeleton from "@/components/resumen/SectionSkeleton";
 import FichaSection from "@/components/resumen/sections/FichaSection";
 import BalanceSection from "@/components/resumen/sections/BalanceSection";
 import ResultadoSection from "@/components/resumen/sections/ResultadoSection";
-import { resolvePeriodParams } from "@/lib/params";
+import { resolvePeriodParams } from "@/lib/app";
 
 export const metadata: Metadata = {
   title: "Resumen | CMF Chile",

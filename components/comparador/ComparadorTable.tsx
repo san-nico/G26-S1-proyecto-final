@@ -1,4 +1,4 @@
-import type { AccountTarget } from "@/lib/bancos";
+import type { AccountTarget } from "@/lib/app";
 
 type ComparadorTableProps = {
   accounts: AccountTarget[];

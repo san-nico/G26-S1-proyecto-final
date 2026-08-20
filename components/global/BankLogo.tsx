@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { bankLogoPath } from "@/lib/format";
+import { bankLogoPath } from "@/lib/app";
 
 type BankLogoProps = {
   children: string;

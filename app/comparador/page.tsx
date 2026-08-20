@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import ComparadorView from "@/components/comparador/ComparadorView";
-import { getAccountsByAllInstitutions, getBanks } from "@/lib/bancos";
-import { ACCOUNTS_BALANCE } from "@/lib/bancos";
-import type { Bank } from "@/lib/bancos";
-import { buildAccountCell, toNumber } from "@/lib/format";
-import { resolvePeriodParams } from "@/lib/params";
+import { getAccountsByAllInstitutions, getBanks } from "@/lib/app";
+import { ACCOUNTS_BALANCE } from "@/lib/app";
+import type { Bank } from "@/lib/app";
+import { buildAccountCell, toNumber, resolvePeriodParams } from "@/lib/app";
 
 export const metadata: Metadata = {
   title: "Comparador de Bancos | CMF Chile",

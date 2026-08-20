@@ -1,12 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-vi.mock("@/lib/bancos", () => ({
-  getFullBalance: vi.fn(),
-}));
+vi.mock("@/lib/app", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/app")>();
+  return {
+    ...actual,
+    getFullBalance: vi.fn(),
+  };
+});
 
 import BalancePage from "@/app/balance/page";
-import { getFullBalance } from "@/lib/bancos";
+import { getFullBalance } from "@/lib/app";
 
 const mockedGetFullBalance = vi.mocked(getFullBalance);
 

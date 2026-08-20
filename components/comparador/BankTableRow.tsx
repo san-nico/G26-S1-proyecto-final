@@ -1,5 +1,5 @@
 import BankLogo from "@/components/global/BankLogo";
-import type { AccountCell, AccountTarget } from "@/lib/bancos";
+import type { AccountCell, AccountTarget } from "@/lib/app";
 
 type BankTableRowProps = {
   code: string;

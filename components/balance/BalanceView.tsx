@@ -1,6 +1,6 @@
 import PageLayout from "@/components/global/PageLayout";
 import type { BalanceAccount } from "@/lib/cmf-bancos";
-import { formatValue } from "@/lib/format";
+import { formatValue } from "@/lib/app";
 import BankLogo from "../global/BankLogo";
 
 type BalanceViewProps = {

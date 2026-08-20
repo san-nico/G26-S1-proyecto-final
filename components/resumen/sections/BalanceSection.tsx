@@ -1,9 +1,9 @@
 import {
   getAccountDetailByAllInstitutions,
   getAccountsByAllInstitutions,
-} from "@/lib/bancos";
-import { ACCOUNTS_BALANCE } from "@/lib/bancos";
-import { formatValue } from "@/lib/format";
+} from "@/lib/app";
+import { ACCOUNTS_BALANCE } from "@/lib/app";
+import { formatValue } from "@/lib/app";
 import SummaryCard from "@/components/global/SummaryCard";
 
 type BalanceSectionProps = {

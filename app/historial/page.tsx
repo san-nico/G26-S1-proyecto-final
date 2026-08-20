@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import HistorialView from "@/components/historial/HistorialView";
-import { ACCOUNTS_BALANCE, getFullBalance } from "@/lib/bancos";
-import { buildAccountCell, toNumber } from "@/lib/format";
-import { resolvePeriodParams } from "@/lib/params";
+import { ACCOUNTS_BALANCE, getFullBalance } from "@/lib/app";
+import { buildAccountCell, toNumber, resolvePeriodParams } from "@/lib/app";
 
 export const metadata: Metadata = {
   title: "Historial | CMF Chile",
